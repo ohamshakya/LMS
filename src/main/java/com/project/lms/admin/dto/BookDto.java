@@ -30,7 +30,6 @@ public class BookDto {
     @NotBlank(message = "genre is required")
     private String genre;
 
-
     @Positive
     private Integer total_copies;
 

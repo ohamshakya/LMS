@@ -40,7 +40,6 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<BookDto> getById(@PathVariable Integer id) {
         log.info("inside get by id book : controller");
         BookDto response = bookService.getById(id);

@@ -14,6 +14,10 @@ public class UserPrincipal implements UserDetails {
         this.users = users;
     }
 
+    public Integer getUserId(){
+        return users.getId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return users.getRoles().stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toSet());

@@ -1,6 +1,8 @@
 package com.project.lms.user.service.impl;
 
+import com.project.lms.admin.dto.BookDto;
 import com.project.lms.admin.entity.Book;
+import com.project.lms.admin.mapper.BookMapper;
 import com.project.lms.admin.repository.BookRepo;
 import com.project.lms.user.entity.Rating;
 import com.project.lms.user.repository.RatingRepo;
@@ -21,7 +23,7 @@ public class ContentBasedFilteringServiceImpl implements ContentBasedFilteringSe
     }
 
     @Override
-    public List<Book> recommend(Integer userId, int topN) {
+    public List<BookDto> recommend(Integer userId, int topN) {
         List<Rating> likedRatings = ratingRepo.findByUserIdAndRatingGreaterThanEqual(userId.longValue(), 4);
         Set<Integer> likedBookIds = likedRatings.stream()
                 .map(r -> r.getBook().getId())
@@ -50,18 +52,21 @@ public class ContentBasedFilteringServiceImpl implements ContentBasedFilteringSe
         return similarityScores.entrySet().stream()
                 .sorted(Map.Entry.<Book, Double>comparingByValue().reversed())
                 .limit(topN)
-                .map(Map.Entry::getKey)
+                .map(entry -> BookMapper.toDto(entry.getKey()))
                 .collect(Collectors.toList());
     }
 
     private double contentSimilarity(Book book1, Book book2) {
         double score = 0;
-        if (book1.getGenre().equalsIgnoreCase(book2.getGenre())) {
+        if (book1.getGenre() != null && book2.getGenre() != null &&
+                book1.getGenre().equalsIgnoreCase(book2.getGenre())) {
             score += 0.7;
         }
-        if (book1.getAuthor().equalsIgnoreCase(book2.getAuthor())) {
+        if (book1.getAuthor() != null && book2.getAuthor() != null &&
+                book1.getAuthor().equalsIgnoreCase(book2.getAuthor())) {
             score += 0.3;
         }
         return score;
     }
+
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface RatingService {
 
-    RatingDto create(RatingDto ratingDto);
+    RatingDto create(Integer id,RatingDto ratingDto);
 
     RatingDto getById(Integer id);
 

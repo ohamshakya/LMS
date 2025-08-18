@@ -1,6 +1,8 @@
 package com.project.lms.admin.repository;
 
 import com.project.lms.admin.entity.Book;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,5 +34,10 @@ public interface BookRepo extends JpaRepository<Book,Integer> {
 
     @Query("SELECT b FROM Book b WHERE b.isAvailable = TRUE")
     List<Book> availableBook();
+
+    @Query("SELECT r.book.id FROM Rating r GROUP BY r.book.id ORDER BY AVG(r.rating) DESC")
+    List<Integer> findTopRatedBookIds(Pageable pageable);
+
+
 
 }

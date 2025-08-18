@@ -26,13 +26,21 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
         for (Long uid : allUserIds) {
             List<Rating> ratings = ratingRepo.findByUserId(uid);
             Map<Integer, Integer> bookRatings = ratings.stream()
-                    .collect(Collectors.toMap(r -> r.getBook().getId(), Rating::getRating));
+                    .collect(Collectors.toMap(
+                            r -> r.getBook().getId(),
+                            Rating::getRating,
+                            (existing, replacement) -> replacement // or Math.max(existing, replacement)
+                    ));
             userRatingsMap.put(uid, bookRatings);
         }
 
         List<Rating> currentUserRatings = ratingRepo.findByUserId(userId.longValue());
         Map<Integer, Integer> currentRatings = currentUserRatings.stream()
-                .collect(Collectors.toMap(r -> r.getBook().getId(), Rating::getRating));
+                .collect(Collectors.toMap(
+                        r -> r.getBook().getId(),
+                        Rating::getRating,
+                        (existing, replacement) -> replacement // same merge strategy here
+                ));
 
         Map<Long, Double> similarityScores = new HashMap<>();
 
@@ -63,6 +71,7 @@ public class CollaborativeFilteringServiceImpl implements CollaborativeFiltering
 
         return recommendedBookIds.stream().limit(topN).collect(Collectors.toList());
     }
+
     private double calculateSimilarity(Map<Integer, Integer> ratings1, Map<Integer, Integer> ratings2) {
         Set<Integer> liked1 = ratings1.entrySet().stream()
                 .filter(e -> e.getValue() >= 4).map(Map.Entry::getKey).collect(Collectors.toSet());
