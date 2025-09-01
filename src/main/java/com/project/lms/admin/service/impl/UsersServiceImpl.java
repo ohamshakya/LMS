@@ -4,7 +4,10 @@ import com.project.lms.admin.dto.LoginRequest;
 import com.project.lms.admin.dto.LoginResponse;
 import com.project.lms.admin.dto.UsersDto;
 import com.project.lms.admin.dto.UsersResponse;
+import com.project.lms.admin.entity.Role;
+import com.project.lms.admin.entity.UserPrincipal;
 import com.project.lms.admin.entity.Users;
+import com.project.lms.admin.mapper.RoleMapper;
 import com.project.lms.admin.mapper.UsersMapper;
 import com.project.lms.admin.repository.UsersRepo;
 import com.project.lms.security.JWTService;
@@ -18,8 +21,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -82,11 +89,14 @@ public class UsersServiceImpl implements UsersService {
         log.info("inside login verify : service");
         String token = null;
       Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        UserPrincipal userDetails = (UserPrincipal) authentication.getPrincipal();
       if(authentication.isAuthenticated())
           return LoginResponse.builder()
                   .username(loginRequest.getUsername())
-                  .email(loginRequest.getEmail())
                   .token(jwtService.generateToken(loginRequest.getUsername()))
+                  .roles(userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()))
                   .build();
      return null;
     }
