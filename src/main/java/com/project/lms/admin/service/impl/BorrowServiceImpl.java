@@ -33,14 +33,28 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public BorrowDto create(Integer id, BorrowDto borrowDto) {
         log.info("inside create borrow : service");
-        Book book = bookRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException(Messages.BORROW_NOT_FOUND));
-        if(!book.getIsAvailable()){
+
+        Book book = bookRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(Messages.BORROW_NOT_FOUND));
+
+        // Check if any copies are available
+        if (book.getAvailableCopies() == null || book.getAvailableCopies() <= 0) {
             throw new BorrowException(Messages.BOOK_ALREADY_BORROWED);
         }
-        book.setIsAvailable(false);
-        Borrow borrow = BorrowMapper.toEntity(book,borrowDto);
-//        validateDates(borrowDto.getBorrowDate(),borrowDto.getDueDate(),null);
+
+        // Decrease available copies by 1
+        book.setAvailableCopies(book.getAvailableCopies() - 1);
+
+        // Update isAvailable based on availableCopies
+        book.setIsAvailable(book.getAvailableCopies() > 0);
+
+        // Save the updated book info
+        bookRepo.save(book);
+
+        // Create borrow entity and save
+        Borrow borrow = BorrowMapper.toEntity(book, borrowDto);
         borrowRepo.save(borrow);
+
         return BorrowMapper.toDto(borrow);
     }
 

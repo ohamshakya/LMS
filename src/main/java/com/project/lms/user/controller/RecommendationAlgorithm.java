@@ -4,6 +4,7 @@ import com.project.lms.admin.dto.BookDto;
 import com.project.lms.admin.entity.Book;
 import com.project.lms.common.util.ResponseWrapper;
 import com.project.lms.user.service.HybridRecommendationService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/recommendation")
+@Tag(name = "RECOMMENDATION", description = "RECOMMENDATION API FOR LMS")
 public class RecommendationAlgorithm {
     private final HybridRecommendationService hybridRecommendationService;
 

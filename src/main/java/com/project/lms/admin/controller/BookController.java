@@ -6,6 +6,7 @@ import com.project.lms.admin.service.BookService;
 import com.project.lms.common.util.Messages;
 import com.project.lms.common.util.PaginationUtil;
 import com.project.lms.common.util.ResponseWrapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/book")
 @Slf4j
+@Tag(name = "BOOK ",description = "BOOK API FOR LMS")
+@CrossOrigin("*")
 public class BookController {
     private final BookService bookService;
 

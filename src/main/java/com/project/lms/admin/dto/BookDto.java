@@ -31,10 +31,10 @@ public class BookDto {
     private String genre;
 
     @Positive
-    private Integer total_copies;
+    private Integer totalCopies;
 
     @Positive
-    private Integer available_copies;
+    private Integer availableCopies;
 
     private Boolean isAvailable;
 

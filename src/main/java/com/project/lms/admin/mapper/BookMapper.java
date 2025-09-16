@@ -12,8 +12,8 @@ public class BookMapper {
                 .publisher(bookDto.getPublisher())
                 .isbn(bookDto.getIsbn())
                 .genre(bookDto.getGenre())
-                .total_copies(bookDto.getTotal_copies())
-                .available_copies(bookDto.getAvailable_copies())
+                .totalCopies(bookDto.getTotalCopies())
+                .availableCopies(bookDto.getAvailableCopies())
                 .isAvailable(true)
                 .build();
     }
@@ -26,8 +26,8 @@ public class BookMapper {
                 .publisher(book.getPublisher())
                 .isbn(book.getIsbn())
                 .genre(book.getGenre())
-                .total_copies(book.getTotal_copies())
-                .available_copies(book.getAvailable_copies())
+                .totalCopies(book.getTotalCopies())
+                .availableCopies(book.getAvailableCopies())
                 .isAvailable(book.getIsAvailable())
                 .createdAt(book.getCreatedAt())
                 .updatedAt(book.getUpdatedAt())

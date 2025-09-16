@@ -2,6 +2,7 @@ package com.project.lms.security;
 
 import com.project.lms.common.exception.AccessDeniedException;
 import com.project.lms.common.exception.CustomAccessDeniedHandler;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,13 +42,19 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/librarian/**").hasRole("LIBRARIAN")
                         .requestMatchers("/user/**").hasRole("USER")
-                        .requestMatchers("/users/register", "/users/login")
+                        .requestMatchers("/users/register", "/users/login","/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .exceptionHandling(ex -> ex.accessDeniedHandler(
-                       new CustomAccessDeniedHandler()
-                ))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(((request, response, authException) ->
+                {response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"Unauthorized\", \"message \" : \"Please check the url or access to this link\"}");
+                })))
 //               .formLogin(Customizer.withDefaults()) //login in web
                 .httpBasic(Customizer.withDefaults())//with postman
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

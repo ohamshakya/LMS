@@ -4,6 +4,7 @@ import com.project.lms.admin.dto.BorrowDto;
 import com.project.lms.admin.service.BorrowService;
 import com.project.lms.common.util.Messages;
 import com.project.lms.common.util.ResponseWrapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,6 +15,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/borrow")
 @Slf4j
+@Tag(name = "BORROW ",description = "BORROW API FOR LMS")
+@CrossOrigin("*")
 public class BorrowController {
     private final BorrowService borrowService;
 
@@ -25,10 +28,10 @@ public class BorrowController {
         this.borrowService = borrowService;
     }
 
-    @PostMapping("/create/{id}")
-    public ResponseWrapper<BorrowDto> create(@PathVariable Integer id, @RequestBody BorrowDto borrowDto) {
+    @PostMapping("/create/{bookId}")
+    public ResponseWrapper<BorrowDto> create(@PathVariable Integer bookId, @RequestBody BorrowDto borrowDto) {
         log.info("inside create borrow : controller");
-        BorrowDto borrowResponse = borrowService.create(id, borrowDto);
+        BorrowDto borrowResponse = borrowService.create(bookId, borrowDto);
         return new ResponseWrapper<>(borrowResponse, Messages.BORROW_CREATED_SUCCESSFULLY, HttpStatus.OK.value());
     }
 

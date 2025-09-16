@@ -4,6 +4,7 @@ import com.project.lms.admin.dto.MembershipDto;
 import com.project.lms.admin.service.MembershipService;
 import com.project.lms.common.util.Messages;
 import com.project.lms.common.util.ResponseWrapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/membership")
 @RestController
 @Slf4j
+@Tag(name = "MEMBERSHIP ",description = "MEMBERSHIP API FOR LMS")
+@CrossOrigin("*")
 public class MembershipController {
     private final MembershipService membershipService;
 

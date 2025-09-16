@@ -46,3 +46,4 @@ public class Membership {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 }
+

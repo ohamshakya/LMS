@@ -53,8 +53,8 @@ public class BookServiceImpl implements BookService {
         existingBook.setPublisher(bookDto.getPublisher());
         existingBook.setIsbn(bookDto.getIsbn());
         existingBook.setGenre(bookDto.getGenre());
-        existingBook.setTotal_copies(bookDto.getTotal_copies());
-        existingBook.setAvailable_copies(bookDto.getAvailable_copies());
+        existingBook.setTotalCopies(bookDto.getTotalCopies());
+        existingBook.setAvailableCopies(bookDto.getAvailableCopies());
         bookRepo.save(existingBook);
         return BookMapper.toDto(existingBook);
     }

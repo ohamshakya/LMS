@@ -3,6 +3,7 @@ package com.project.lms.admin.controller;
 import com.project.lms.admin.dto.ReservationDto;
 import com.project.lms.admin.service.ReservationService;
 import com.project.lms.common.util.ResponseWrapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/reservation")
 @Slf4j
+@Tag(name = "RESERVATION", description = "RESERVATION API FOR LMS")
+@CrossOrigin("*")
 public class ReservationController {
 
     private final ReservationService reservationService;
@@ -41,7 +44,7 @@ public class ReservationController {
         return new ResponseWrapper<>(reservationsByMember, "retrieved by member", HttpStatus.OK.value());
     }
 
-    @DeleteMapping("/reservation/{reservationId}")
+    @DeleteMapping("/{reservationId}")
     public ResponseWrapper<String> cancelReservation(@PathVariable Integer reservationId) {
         log.info("inside cancel reservation : controller");
         reservationService.cancelReservation(reservationId);

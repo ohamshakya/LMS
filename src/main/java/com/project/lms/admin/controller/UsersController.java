@@ -8,6 +8,7 @@ import com.project.lms.admin.service.UsersService;
 import com.project.lms.common.util.Messages;
 import com.project.lms.common.util.PaginationUtil;
 import com.project.lms.common.util.ResponseWrapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@Tag(name = "USER API ",description = "USER API FOR LMS")
+@CrossOrigin("*")
 public class UsersController {
 
     public static final int DEFAULT_PAGE_SIZE = 10;

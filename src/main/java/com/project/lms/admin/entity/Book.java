@@ -36,9 +36,9 @@ public class Book {
     @Column(name = "genre", nullable = false)
     private String genre;
 
-    private Integer total_copies;
+    private Integer totalCopies;
 
-    private Integer available_copies;
+    private Integer availableCopies;
 
     @Column(name = "is_available", nullable = false)
     private Boolean isAvailable;
