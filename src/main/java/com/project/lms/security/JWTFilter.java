@@ -34,10 +34,26 @@ public class JWTFilter extends OncePerRequestFilter {
         String token = null;
         String username = null;
 
+        String path = request.getRequestURI();
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             username = jwtService.extractUsername(token);
+
         }
+
+        if (path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars")
+                || path.equals("/users/login")
+                || path.equals("/users/register")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = context.getBean(MyUserDetailsService.class).loadUserByUsername(username);

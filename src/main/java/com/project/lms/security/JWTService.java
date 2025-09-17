@@ -3,6 +3,7 @@ package com.project.lms.security;
 import com.project.lms.common.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -22,19 +23,13 @@ import java.util.function.Function;
 @Service
 public class JWTService {
 
-    @Value("${jwt.secret}")
-    private String secretBase64;
-    private String secretKey = "";
+    private final SecretKey secretKey;
 
-    public JWTService() {
-        try {
-            KeyGenerator keyGen = KeyGenerator.getInstance("HMACSHA256");
-            SecretKey secret = keyGen.generateKey();
-            secretKey = Base64.getEncoder().encodeToString(secret.getEncoded());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-
+    // Inject your Base64 encoded secret key from application.properties or env
+    public JWTService(@Value("${jwt.secret}") String secret) {
+        // decode base64 secret to bytes and generate the key for signing
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(String username) {
@@ -45,16 +40,16 @@ public class JWTService {
                 .add(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() * 60 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + 30 * 3600 * 1000))
                 .and()
-                .signWith(getKey())
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
-    }
+//    public SecretKey getKey() {
+//        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+//        return Keys.hmacShaKeyFor(keyBytes);
+//    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -68,7 +63,7 @@ public class JWTService {
     private Claims extractAllClaims(String token) {
        try{
            return Jwts.parser()
-                   .verifyWith(getKey())
+                   .verifyWith(secretKey)
                    .build()
                    .parseSignedClaims(token)
                    .getPayload();

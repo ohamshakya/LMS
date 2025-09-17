@@ -40,13 +40,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/librarian/**").hasRole("LIBRARIAN")
                         .requestMatchers("/user/**").hasRole("USER")
-                        .requestMatchers("/users/register", "/users/login","/swagger-ui.html",
+                        .requestMatchers(
+                                "/users/register",
+                                "/users/login",
+                                "/swagger-ui.html",
                                 "/swagger-ui/**",
+                                "/swagger-ui/index.html",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/webjars/**")
+                                "/webjars/**"
+                        )
                         .permitAll()
                         .anyRequest()
                         .authenticated())

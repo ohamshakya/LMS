@@ -1,6 +1,7 @@
 package com.project.lms.admin.mapper;
 
 import com.project.lms.admin.dto.RoleDto;
+import com.project.lms.admin.dto.RoleResponse;
 import com.project.lms.admin.entity.Role;
 
 public class RoleMapper {
@@ -16,6 +17,15 @@ public class RoleMapper {
         return RoleDto.builder()
                 .id(role.getId())
                 .name(role.getName())
+                .build();
+    }
+
+    public static RoleResponse toRoleResponse(Role role){
+        return RoleResponse.builder()
+                .id(role.getId())
+                .name(role.getName())
+                .createdAt(role.getCreatedAt())
+                .updatedAt(role.getUpdatedAt())
                 .build();
     }
 }

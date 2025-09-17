@@ -67,6 +67,7 @@ public class BookController {
     @GetMapping
     public ResponseWrapper<Page<BookDto>> getAllBook(@RequestParam("page")Optional<Integer> page,
                                                      @RequestParam("size")Optional<Integer> size,
+                                                     @RequestParam("query")Optional<String> query,
                                                      @RequestParam("sortBy")Optional<String> sortBy,
                                                      @RequestParam("sortOrder")Optional<String> sortOrder){
         log.info("inside get all with pagination : controller");
@@ -76,9 +77,15 @@ public class BookController {
                 sortBy.orElse(SORT_BY),
                 sortOrder.orElse(SORT_ORDER)
         );
+        Page<BookDto> bookResponse;
+        if (query.isPresent() && !query.get().isBlank()) {
+            bookResponse = bookService.search(query.get(), pageable);
+            return new ResponseWrapper<>(bookResponse, "Retrieved successfully", HttpStatus.OK.value());
+        } else {
+            bookResponse = bookService.getAll(pageable);
+            return new ResponseWrapper<>(bookResponse, Messages.USER_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value());
+        }
 
-        Page<BookDto> responseGetAll = bookService.getAll(pageable);
-        return new ResponseWrapper<>(responseGetAll,Messages.BOOK_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value());
     }
 
     @GetMapping("/total-books")

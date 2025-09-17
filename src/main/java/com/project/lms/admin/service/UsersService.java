@@ -17,4 +17,8 @@ public interface UsersService {
     Page<UsersResponse> getAll(Pageable pageable);
 
     LoginResponse verify(LoginRequest loginRequest);
+
+    String delete(Integer id);
+
+    Page<UsersResponse> search(String keyword,Pageable pageable);
 }

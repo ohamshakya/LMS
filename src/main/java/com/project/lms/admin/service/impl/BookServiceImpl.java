@@ -95,4 +95,11 @@ public class BookServiceImpl implements BookService {
         log.info("inside get all available book : service");
         return bookRepo.availableBook().stream().map(BookMapper::toDto).collect(Collectors.toList());
     }
+
+    @Override
+    public Page<BookDto> search(String keyword, Pageable pageable) {
+        return bookRepo.searchByMultipleFields(keyword, pageable).map(BookMapper::toDto);
+    }
+
+
 }

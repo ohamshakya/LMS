@@ -25,5 +25,9 @@ public interface BookService {
 
     List<BookDto> getAllAvailableBook();
 
+    Page<BookDto> search(String keyword,Pageable pageable);
+
+
+
 
 }

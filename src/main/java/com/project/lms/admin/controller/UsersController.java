@@ -43,7 +43,7 @@ public class UsersController {
         return "Welcome to Home page" + request.getSession().getId();
     }
 
-    @PostMapping("/register")
+    @PostMapping("/add-user")
     public ResponseWrapper<String> create(@Valid @RequestBody UsersDto usersDto){
         log.info("inside create users : controller");
         String savedResponse = usersService.create(usersDto);
@@ -57,10 +57,11 @@ public class UsersController {
         return new ResponseWrapper<>(verify,Messages.USER_LOGGED_IN_SUCCESSFULLY,HttpStatus.OK.value());
     }
 
-    @PreAuthorize("hasRole('ADMIN'')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseWrapper<Page<UsersResponse>> getAllUser(@RequestParam("page") Optional<Integer> page,
+    public ResponseWrapper<Object> getAllUser(@RequestParam("page") Optional<Integer> page,
                                                            @RequestParam("size")Optional<Integer> size,
+                                                           @RequestParam("query")Optional<String> query,
                                                            @RequestParam("sortBy")Optional<String> sortBy,
                                                            @RequestParam("sortOrder")Optional<String> sortOrder){
         log.info("inside get all user : controller");
@@ -70,7 +71,19 @@ public class UsersController {
                 sortBy.orElse(SORT_BY),
                 sortOrder.orElse(SORT_ORDER)
         );
-        Page<UsersResponse> getAllResponse = usersService.getAll(pageable);
-        return new ResponseWrapper<>(getAllResponse, Messages.USER_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value());
+        Object usersResponse;
+        if (query.isPresent() && !query.get().isBlank()) {
+            usersResponse = usersService.search(query.get(), pageable);
+            return new ResponseWrapper<>(usersResponse, "Retrieved successfully", HttpStatus.OK.value());
+        } else {
+            usersResponse = usersService.getAll(pageable);
+            return new ResponseWrapper<>(usersResponse, Messages.USER_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseWrapper<String> delete(@PathVariable Integer id){
+        String delete = usersService.delete(id);
+        return  new ResponseWrapper<>(delete,"deleted successfully",HttpStatus.OK.value());
     }
 }

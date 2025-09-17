@@ -14,4 +14,6 @@ public interface MembershipService {
     Page<MembershipDto> getAll(Pageable pageable);
 
     Integer getTotalMember();
+
+    String delete(Integer id);
 }

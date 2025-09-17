@@ -100,4 +100,16 @@ public class UsersServiceImpl implements UsersService {
                   .build();
      return null;
     }
+
+    @Override
+    public String delete(Integer id) {
+        Users users = usersRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("NOT FOUND"));
+        usersRepo.delete(users);
+        return "deleted";
+    }
+
+    @Override
+    public Page<UsersResponse> search(String keyword, Pageable pageable) {
+        return usersRepo.searchByFirstOrLastName(keyword,pageable).map(UsersMapper::toResponse);
+    }
 }

@@ -64,4 +64,11 @@ public class MembershipServiceImpl implements MembershipService {
         log.info("inside get total member : service");
         return membershipRepo.totalMember();
     }
+
+    @Override
+    public String delete(Integer id) {
+        Membership membership = membershipRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("NOT FOUND"));
+        membershipRepo.delete(membership);
+        return "deleted";
+    }
 }

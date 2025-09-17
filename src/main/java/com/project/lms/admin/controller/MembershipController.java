@@ -5,6 +5,7 @@ import com.project.lms.admin.service.MembershipService;
 import com.project.lms.common.util.Messages;
 import com.project.lms.common.util.ResponseWrapper;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,6 +45,12 @@ public class MembershipController {
         log.info("inside total membership : controller");
         Integer response = membershipService.getTotalMember();
         return new ResponseWrapper<>(response, Messages.TOTAL_MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseWrapper<String> deleteMembership(@PathVariable Integer id){
+        String delete = membershipService.delete(id);
+        return new ResponseWrapper<>(delete,"deleted successfully",HttpStatus.OK.value());
     }
 
 }
