@@ -1,17 +1,22 @@
 package com.project.lms.admin.service.impl;
 
 import com.project.lms.admin.dto.BorrowDto;
+import com.project.lms.admin.dto.BorrowResponse;
 import com.project.lms.admin.entity.Book;
 import com.project.lms.admin.entity.Borrow;
+import com.project.lms.admin.entity.Users;
 import com.project.lms.admin.mapper.BorrowMapper;
 import com.project.lms.admin.repository.BookRepo;
 import com.project.lms.admin.repository.BorrowRepo;
+import com.project.lms.admin.repository.UsersRepo;
 import com.project.lms.admin.service.BorrowService;
 import com.project.lms.admin.service.ReservationService;
 import com.project.lms.common.exception.BorrowException;
 import com.project.lms.common.exception.ResourceNotFoundException;
 import com.project.lms.common.util.Messages;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,22 +27,24 @@ import java.time.LocalDate;
 public class BorrowServiceImpl implements BorrowService {
     private final BorrowRepo borrowRepo;
     private final BookRepo bookRepo;
+    private final UsersRepo usersRepo;
     private final ReservationService reservationService;
 
-    public BorrowServiceImpl(BorrowRepo borrowRepo, BookRepo bookRepo, ReservationService reservationService) {
+    public BorrowServiceImpl(BorrowRepo borrowRepo, BookRepo bookRepo, UsersRepo usersRepo, ReservationService reservationService) {
         this.borrowRepo = borrowRepo;
         this.bookRepo = bookRepo;
+        this.usersRepo = usersRepo;
         this.reservationService = reservationService;
     }
 
     @Override
-    public BorrowDto create(Integer id, BorrowDto borrowDto) {
+    public BorrowDto create(BorrowDto borrowDto) {
         log.info("inside create borrow : service");
 
-        Book book = bookRepo.findById(id)
+        Book book = bookRepo.findById(borrowDto.getBooks().getId())
                 .orElseThrow(() -> new ResourceNotFoundException(Messages.BORROW_NOT_FOUND));
 
-        // Check if any copies are available
+        Users user = usersRepo.findById(borrowDto.getUsers().getId()).orElseThrow(() -> new ResourceNotFoundException("NOT FOUND"));
         if (book.getAvailableCopies() == null || book.getAvailableCopies() <= 0) {
             throw new BorrowException(Messages.BOOK_ALREADY_BORROWED);
         }
@@ -52,7 +59,7 @@ public class BorrowServiceImpl implements BorrowService {
         bookRepo.save(book);
 
         // Create borrow entity and save
-        Borrow borrow = BorrowMapper.toEntity(book, borrowDto);
+        Borrow borrow = BorrowMapper.toEntity(book,user, borrowDto);
         borrowRepo.save(borrow);
 
         return BorrowMapper.toDto(borrow);
@@ -73,6 +80,13 @@ public class BorrowServiceImpl implements BorrowService {
         log.info("inside get borrow by id : service");
         Borrow existedBorrow = borrowRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException(Messages.BORROW_NOT_FOUND));
         return BorrowMapper.toDto(existedBorrow);
+    }
+
+    @Override
+    public Page<BorrowResponse> getAll(Pageable pageable) {
+       log.info("inside get all borrow book page : service");
+       return borrowRepo.findAll(pageable).map(BorrowMapper::toResponse);
+
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.project.lms.admin.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -12,25 +11,33 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
-public class BorrowDto {
+public class BorrowResponse {
+
     private Integer id;
 
-    @NotBlank(message = "borrow date is required")
     private LocalDate borrowDate;
 
-    @NotBlank(message = "return date is required")
     private LocalDate returnDate;
 
-    private BookResponse books;
+    private String title;
 
-    private UserResponse users;
+    private String author;
+
+    private String publisher;
+
+    private String isbn;
+
+    private String fullName;
+
+    private String phoneNumber;
+
+    private String address;
+
+    private String userName;
 
     private LocalDate dueDate;
 
     private Boolean isReturned;
 
     private BigDecimal fineAmount;
-
-    @JsonIgnore
-    private BookDto bookDto;
 }

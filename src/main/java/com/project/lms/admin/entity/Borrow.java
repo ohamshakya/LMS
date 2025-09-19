@@ -35,6 +35,9 @@ public class Borrow {
     @ManyToOne(fetch = FetchType.LAZY)
     private Book book;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Users user;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

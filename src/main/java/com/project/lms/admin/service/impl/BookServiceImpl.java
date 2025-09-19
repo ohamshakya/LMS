@@ -101,5 +101,20 @@ public class BookServiceImpl implements BookService {
         return bookRepo.searchByMultipleFields(keyword, pageable).map(BookMapper::toDto);
     }
 
+    @Override
+    public Page<BookDto> newestBook(Pageable pageable) {
+        return bookRepo.findAllByOrderByCreatedAtDesc(pageable).map(BookMapper::toDto);
+    }
+
+    @Override
+    public Page<BookDto> highestRateBook(Pageable pageable) {
+        return bookRepo.findTopRatedBooks(pageable).map(BookMapper::toDto);
+    }
+
+    @Override
+    public Page<BookDto> mostBorrowedBook(Pageable pageable) {
+        return bookRepo.findMostBorrowedBooks(pageable).map(BookMapper::toDto);
+    }
+
 
 }

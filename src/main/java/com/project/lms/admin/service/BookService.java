@@ -27,6 +27,12 @@ public interface BookService {
 
     Page<BookDto> search(String keyword,Pageable pageable);
 
+    Page<BookDto> newestBook(Pageable pageable);
+
+    Page<BookDto> highestRateBook(Pageable pageable);
+
+    Page<BookDto> mostBorrowedBook(Pageable pageable);
+
 
 
 

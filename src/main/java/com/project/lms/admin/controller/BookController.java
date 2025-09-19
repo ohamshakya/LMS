@@ -30,6 +30,10 @@ public class BookController {
     public static final String SORT_BY = "updatedAt";
     public static final String SORT_ORDER = "ASC";
 
+//    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final String DEFAULT_SORT_BY = "newest";
+    private static final String DEFAULT_SORT_ORDER = "desc";
+
     public BookController(BookService bookService) {
         this.bookService = bookService;
     }
@@ -105,6 +109,40 @@ public class BookController {
         log.info("inside get all available books : controller");
         List<BookDto> allAvailableBook = bookService.getAllAvailableBook();
         return new ResponseWrapper<>(allAvailableBook,Messages.BOOK_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value());
+    }
+
+    @GetMapping("/discover")
+    public ResponseWrapper<Page<BookDto>> getAllNewestHighRatedMostBorrowed(@RequestParam("page")Optional<Integer> page,
+                                                                            @RequestParam("size")Optional<Integer> size,
+                                                                            @RequestParam("query")Optional<String> query,
+                                                                            @RequestParam("sortBy")Optional<String> sortBy,
+                                                                            @RequestParam("sortOrder")Optional<String> sortOrder){
+        // Use your custom pagination utility
+        Pageable pageable = PaginationUtil.preparePaginationUtil(
+                page,
+                size.orElse(DEFAULT_PAGE_SIZE),
+                sortBy.orElse(DEFAULT_SORT_BY),
+                sortOrder.orElse(DEFAULT_SORT_ORDER)
+        );
+
+        // Determine which sorting to apply
+        String sortType = sortBy.orElse(DEFAULT_SORT_BY).toLowerCase();
+        Page<BookDto> books;
+
+        switch (sortType) {
+            case "most_borrowed":
+                books = bookService.mostBorrowedBook(pageable);
+                break;
+            case "highest_rated":
+                books = bookService.highestRateBook(pageable);
+                break;
+            case "newest":
+            default:
+                books = bookService.newestBook(pageable);
+                break;
+        }
+
+        return new ResponseWrapper<>(books, "Books retrieved successfully", HttpStatus.OK.value());
     }
 
 }

@@ -3,6 +3,9 @@ package com.project.lms.user.entity;
 import com.project.lms.admin.entity.Book;
 import com.project.lms.admin.entity.Users;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 @Entity
@@ -24,6 +27,8 @@ public class Rating {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
+    @Min(1)
+    @Max(5)
     private int rating;
 
     private String review;

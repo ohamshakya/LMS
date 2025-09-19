@@ -1,15 +1,18 @@
 package com.project.lms.admin.service;
 
 import com.project.lms.admin.dto.BorrowDto;
+import com.project.lms.admin.dto.BorrowResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface BorrowService {
-    BorrowDto create(Integer id, BorrowDto borrowDto);
+    BorrowDto create(BorrowDto borrowDto);
 
     BorrowDto update(Integer id, BorrowDto borrowDto);
 
     BorrowDto getById(Integer id);
 
-//    Page<BorrowDto> getAll(Pageable pageable);
+    Page<BorrowResponse> getAll(Pageable pageable);
 
     String returnedBook(Integer id);
 }
