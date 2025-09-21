@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/recommendation")
 @Tag(name = "RECOMMENDATION", description = "RECOMMENDATION API FOR LMS")
+@CrossOrigin("*")
 public class RecommendationAlgorithm {
     private final HybridRecommendationService hybridRecommendationService;
 
@@ -24,7 +25,7 @@ public class RecommendationAlgorithm {
     public ResponseWrapper<List<BookDto>> recommendBooks(@PathVariable Integer userId,
                                                          @RequestParam(defaultValue = "10") int topN){
         List<BookDto> booksRecommend = hybridRecommendationService.recommend(userId,topN);
-        return new ResponseWrapper<>(booksRecommend,"books retrieved with recommendation", HttpStatus.OK.value());
+        return new ResponseWrapper<>(booksRecommend,"books retrieved with recommendation", HttpStatus.OK.value(),true);
 
     }
 }

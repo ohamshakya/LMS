@@ -43,14 +43,14 @@ public class BookController {
     public ResponseWrapper<BookDto> create(@Valid  @RequestBody BookDto bookDto) {
         log.info("inside create book : controller");
         BookDto response = bookService.create(bookDto);
-        return new ResponseWrapper<>(response, Messages.BOOK_CREATED_SUCCESSFULLY, HttpStatus.CREATED.value());
+        return new ResponseWrapper<>(response, Messages.BOOK_CREATED_SUCCESSFULLY, HttpStatus.CREATED.value(),true);
     }
 
     @GetMapping("/{id}")
     public ResponseWrapper<BookDto> getById(@PathVariable Integer id) {
         log.info("inside get by id book : controller");
         BookDto response = bookService.getById(id);
-        return new ResponseWrapper<>(response, Messages.BOOK_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value());
+        return new ResponseWrapper<>(response, Messages.BOOK_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
     }
 
     @PutMapping("/update/{id}")
@@ -58,14 +58,14 @@ public class BookController {
     public ResponseWrapper<BookDto> update(@PathVariable Integer id, @RequestBody BookDto bookDto){
         log.info("inside update book : controller");
         BookDto response = bookService.update(id, bookDto);
-        return new ResponseWrapper<>(response,Messages.BOOK_UPDATED_SUCCESSFULLY,HttpStatus.OK.value());
+        return new ResponseWrapper<>(response,Messages.BOOK_UPDATED_SUCCESSFULLY,HttpStatus.OK.value(),true);
     }
 
     @GetMapping("/author")
     public ResponseWrapper<BookDto> getByAuthorName(@RequestParam("authorName")String authorName){
         log.info("inside get author by name : controller");
         BookDto byAuthorName = bookService.getByAuthorName(authorName);
-        return new ResponseWrapper<>(byAuthorName,Messages.BOOK_RETRIEVED_BY_AUTHOR_NAME,HttpStatus.OK.value());
+        return new ResponseWrapper<>(byAuthorName,Messages.BOOK_RETRIEVED_BY_AUTHOR_NAME,HttpStatus.OK.value(),true);
     }
 
     @GetMapping
@@ -84,10 +84,10 @@ public class BookController {
         Page<BookDto> bookResponse;
         if (query.isPresent() && !query.get().isBlank()) {
             bookResponse = bookService.search(query.get(), pageable);
-            return new ResponseWrapper<>(bookResponse, "Retrieved successfully", HttpStatus.OK.value());
+            return new ResponseWrapper<>(bookResponse, "Retrieved successfully", HttpStatus.OK.value(),true);
         } else {
             bookResponse = bookService.getAll(pageable);
-            return new ResponseWrapper<>(bookResponse, Messages.USER_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value());
+            return new ResponseWrapper<>(bookResponse, Messages.USER_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
         }
 
     }
@@ -99,7 +99,7 @@ public class BookController {
         tb.setTotalBooks(bookService.totalBook());
         tb.setAvailableBooks(bookService.availableBook());
 
-        return new ResponseWrapper<>(tb, Messages.TOTAL_BOOK_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value());
+        return new ResponseWrapper<>(tb, Messages.TOTAL_BOOK_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value(),true);
     }
 
 
@@ -108,10 +108,11 @@ public class BookController {
     public ResponseWrapper<List<BookDto>> getAllAvailableBooks(){
         log.info("inside get all available books : controller");
         List<BookDto> allAvailableBook = bookService.getAllAvailableBook();
-        return new ResponseWrapper<>(allAvailableBook,Messages.BOOK_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value());
+        return new ResponseWrapper<>(allAvailableBook,Messages.BOOK_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value(),true);
     }
 
     @GetMapping("/discover")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<Page<BookDto>> getAllNewestHighRatedMostBorrowed(@RequestParam("page")Optional<Integer> page,
                                                                             @RequestParam("size")Optional<Integer> size,
                                                                             @RequestParam("query")Optional<String> query,
@@ -142,7 +143,7 @@ public class BookController {
                 break;
         }
 
-        return new ResponseWrapper<>(books, "Books retrieved successfully", HttpStatus.OK.value());
+        return new ResponseWrapper<>(books, "Books retrieved successfully", HttpStatus.OK.value(),true);
     }
 
 }

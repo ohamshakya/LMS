@@ -27,27 +27,27 @@ public class ReservationController {
     public ResponseWrapper<ReservationDto> placeReservation(@PathVariable Integer bookId, @PathVariable Integer memberId) {
         log.info("inside place reservation : controller");
         ReservationDto response = reservationService.placeReservation(bookId, memberId);
-        return new ResponseWrapper<>(response, "placed successfully", HttpStatus.OK.value());
+        return new ResponseWrapper<>(response, "placed successfully", HttpStatus.OK.value(),true);
     }
 
     @GetMapping
     public ResponseWrapper<List<ReservationDto>> getAllReservation() {
         log.info("inside get all reservation : controller");
         List<ReservationDto> allReservations = reservationService.getAllReservations();
-        return new ResponseWrapper<>(allReservations, "retrieved successfully", HttpStatus.OK.value());
+        return new ResponseWrapper<>(allReservations, "retrieved successfully", HttpStatus.OK.value(),true);
     }
 
     @GetMapping("/member/{memberId}")
     public ResponseWrapper<List<ReservationDto>> getReservationByMember(@PathVariable Integer memberId) {
         log.info("inside get reservation by member : controller");
         List<ReservationDto> reservationsByMember = reservationService.getReservationsByMember(memberId);
-        return new ResponseWrapper<>(reservationsByMember, "retrieved by member", HttpStatus.OK.value());
+        return new ResponseWrapper<>(reservationsByMember, "retrieved by member", HttpStatus.OK.value(),true);
     }
 
     @DeleteMapping("/{reservationId}")
     public ResponseWrapper<String> cancelReservation(@PathVariable Integer reservationId) {
         log.info("inside cancel reservation : controller");
         reservationService.cancelReservation(reservationId);
-        return new ResponseWrapper<>("cancelled", "canceled", HttpStatus.OK.value());
+        return new ResponseWrapper<>("cancelled", "canceled", HttpStatus.OK.value(),true);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/rating")
 @Slf4j
 @Tag(name = "RATING", description = "RATING API FOR LMS")
+@CrossOrigin("*")
 public class RatingController {
     private final RatingService ratingService;
 
@@ -24,6 +25,6 @@ public class RatingController {
     @PreAuthorize("hasRole('USER')")
     public ResponseWrapper<RatingDto> create(@PathVariable Integer id, @RequestBody RatingDto ratingDto){
         RatingDto ratingDto1 = ratingService.create(id,ratingDto);
-        return new ResponseWrapper<>(ratingDto1,"created successfully", HttpStatus.OK.value());
+        return new ResponseWrapper<>(ratingDto1,"created successfully", HttpStatus.OK.value(),true);
     }
 }

@@ -28,7 +28,7 @@ public class MembershipController {
     public ResponseWrapper<MembershipDto> create(@PathVariable Integer id, @RequestBody MembershipDto membershipDto) {
         log.info("inside create membership : controller");
         MembershipDto membershipResponse = membershipService.create(id, membershipDto);
-        return new ResponseWrapper<>(membershipResponse, Messages.MEMBERSHIP_CREATED_SUCCESSFULLY, HttpStatus.OK.value());
+        return new ResponseWrapper<>(membershipResponse, Messages.MEMBERSHIP_CREATED_SUCCESSFULLY, HttpStatus.OK.value(),false);
     }
 
     @GetMapping("/{id}")
@@ -36,7 +36,7 @@ public class MembershipController {
     public ResponseWrapper<MembershipDto> getById(@PathVariable Integer id) {
         log.info("inside get membership by id : controller");
         MembershipDto byId = membershipService.getById(id);
-        return new ResponseWrapper<>(byId, Messages.MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value());
+        return new ResponseWrapper<>(byId, Messages.MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),false);
     }
 
     @GetMapping("/total-membership")
@@ -44,13 +44,13 @@ public class MembershipController {
     public ResponseWrapper<Integer> totalMembership() {
         log.info("inside total membership : controller");
         Integer response = membershipService.getTotalMember();
-        return new ResponseWrapper<>(response, Messages.TOTAL_MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value());
+        return new ResponseWrapper<>(response, Messages.TOTAL_MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),false);
     }
 
     @DeleteMapping("/{id}")
     public ResponseWrapper<String> deleteMembership(@PathVariable Integer id){
         String delete = membershipService.delete(id);
-        return new ResponseWrapper<>(delete,"deleted successfully",HttpStatus.OK.value());
+        return new ResponseWrapper<>(delete,"deleted successfully",HttpStatus.OK.value(),false);
     }
 
 }

@@ -13,4 +13,5 @@ public class ResponseWrapper <T>{
     private T data;
     private String message;
     private int status;
+    private boolean success;
 }

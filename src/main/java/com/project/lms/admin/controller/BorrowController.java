@@ -37,7 +37,7 @@ public class BorrowController {
     public ResponseWrapper<BorrowDto> create(@RequestBody BorrowDto borrowDto) {
         log.info("inside create borrow : controller");
         BorrowDto borrowResponse = borrowService.create(borrowDto);
-        return new ResponseWrapper<>(borrowResponse, Messages.BORROW_CREATED_SUCCESSFULLY, HttpStatus.OK.value());
+        return new ResponseWrapper<>(borrowResponse, Messages.BORROW_CREATED_SUCCESSFULLY, HttpStatus.OK.value(),true);
     }
 
     @GetMapping("/{id}")
@@ -45,7 +45,7 @@ public class BorrowController {
     public ResponseWrapper<BorrowDto> getById(@PathVariable Integer id) {
         log.info("inside get by id : controller");
         BorrowDto byIdResponse = borrowService.getById(id);
-        return new ResponseWrapper<>(byIdResponse, Messages.BORROW_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value());
+        return new ResponseWrapper<>(byIdResponse, Messages.BORROW_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
     }
 
     @PutMapping("/update/{id}")
@@ -53,7 +53,7 @@ public class BorrowController {
     public ResponseWrapper<BorrowDto> update(@PathVariable Integer id, @RequestBody BorrowDto borrowDto) {
         log.info("inside update borrow  : controller");
         BorrowDto updateResponse = borrowService.update(id, borrowDto);
-        return new ResponseWrapper<>(updateResponse, Messages.BORROW_UPDATED_SUCCESSFULLY, HttpStatus.OK.value());
+        return new ResponseWrapper<>(updateResponse, Messages.BORROW_UPDATED_SUCCESSFULLY, HttpStatus.OK.value(),true);
     }
 
     @GetMapping
@@ -72,7 +72,7 @@ public class BorrowController {
         );
 
         Page<BorrowResponse> allResponse = borrowService.getAll(pageable);
-        return new ResponseWrapper<>(allResponse,"retrieved successfully",HttpStatus.OK.value());
+        return new ResponseWrapper<>(allResponse,"retrieved successfully",HttpStatus.OK.value(),true);
     }
 
     @PutMapping("/return/{id}")
@@ -80,6 +80,6 @@ public class BorrowController {
     public ResponseWrapper<String> returnBook(@PathVariable Integer id) {
         log.info("inside return book : controller");
         String response = borrowService.returnedBook(id);
-        return new ResponseWrapper<>(response, Messages.BOOK_RETURNED_SUCCESSFULLY, HttpStatus.OK.value());
+        return new ResponseWrapper<>(response, Messages.BOOK_RETURNED_SUCCESSFULLY, HttpStatus.OK.value(),true);
     }
 }
