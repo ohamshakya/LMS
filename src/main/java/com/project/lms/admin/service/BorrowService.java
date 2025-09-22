@@ -15,4 +15,6 @@ public interface BorrowService {
     Page<BorrowResponse> getAll(Pageable pageable);
 
     String returnedBook(Integer id);
+
+    Page<BorrowResponse> getAllById(Integer userId,Pageable pageable);
 }

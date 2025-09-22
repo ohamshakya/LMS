@@ -98,22 +98,33 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Page<BookDto> search(String keyword, Pageable pageable) {
+        log.info("inside search book : service");
         return bookRepo.searchByMultipleFields(keyword, pageable).map(BookMapper::toDto);
     }
 
     @Override
     public Page<BookDto> newestBook(Pageable pageable) {
+        log.info("inside newest book : service");
         return bookRepo.findAllByOrderByCreatedAtDesc(pageable).map(BookMapper::toDto);
     }
 
     @Override
     public Page<BookDto> highestRateBook(Pageable pageable) {
+        log.info("inside highest Rate book : service");
         return bookRepo.findTopRatedBooks(pageable).map(BookMapper::toDto);
     }
 
     @Override
     public Page<BookDto> mostBorrowedBook(Pageable pageable) {
+        log.info("inside most borrowed book : service");
         return bookRepo.findMostBorrowedBooks(pageable).map(BookMapper::toDto);
+    }
+
+    @Override
+    public String deleteBook(Integer id) {
+        Book existingBook = bookRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("NOT FOUND"));
+        bookRepo.delete(existingBook);
+        return "Deleted book with " + existingBook.getIsbn() + " and title is " + existingBook.getTitle();
     }
 
 

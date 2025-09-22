@@ -126,6 +126,12 @@ public class BorrowServiceImpl implements BorrowService {
         }
     }
 
+    @Override
+    public Page<BorrowResponse> getAllById(Integer userId, Pageable pageable) {
+        log.info("inside get all by user id with pagination : service");
+        return borrowRepo.getAllById(userId,pageable).map(BorrowMapper::toResponse);
+    }
+
     private Borrow checkIfExists(Integer id){
         log.info("inside check if borrow id exists : service");
         return borrowRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException(Messages.BORROW_NOT_FOUND));

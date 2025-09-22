@@ -118,7 +118,6 @@ public class BookController {
                                                                             @RequestParam("query")Optional<String> query,
                                                                             @RequestParam("sortBy")Optional<String> sortBy,
                                                                             @RequestParam("sortOrder")Optional<String> sortOrder){
-        // Use your custom pagination utility
         Pageable pageable = PaginationUtil.preparePaginationUtil(
                 page,
                 size.orElse(DEFAULT_PAGE_SIZE),
@@ -144,6 +143,12 @@ public class BookController {
         }
 
         return new ResponseWrapper<>(books, "Books retrieved successfully", HttpStatus.OK.value(),true);
+    }
+
+    public ResponseWrapper<String> deleteBook(@PathVariable Integer id){
+        log.info("inside delete book : controller");
+        String deleteBook = bookService.deleteBook(id);
+        return new ResponseWrapper<>(deleteBook,"deleted successfully ",HttpStatus.OK.value(),true);
     }
 
 }

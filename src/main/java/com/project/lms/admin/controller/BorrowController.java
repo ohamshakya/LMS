@@ -41,7 +41,6 @@ public class BorrowController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<BorrowDto> getById(@PathVariable Integer id) {
         log.info("inside get by id : controller");
         BorrowDto byIdResponse = borrowService.getById(id);
@@ -49,7 +48,6 @@ public class BorrowController {
     }
 
     @PutMapping("/update/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<BorrowDto> update(@PathVariable Integer id, @RequestBody BorrowDto borrowDto) {
         log.info("inside update borrow  : controller");
         BorrowDto updateResponse = borrowService.update(id, borrowDto);
@@ -57,7 +55,6 @@ public class BorrowController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<Page<BorrowResponse>> getAll(@RequestParam("page") Optional<Integer> page,
                                                         @RequestParam("size")Optional<Integer> size,
 //                                                        @RequestParam("query")Optional<String> query,
@@ -76,10 +73,27 @@ public class BorrowController {
     }
 
     @PutMapping("/return/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<String> returnBook(@PathVariable Integer id) {
         log.info("inside return book : controller");
         String response = borrowService.returnedBook(id);
         return new ResponseWrapper<>(response, Messages.BOOK_RETURNED_SUCCESSFULLY, HttpStatus.OK.value(),true);
+    }
+
+    @GetMapping("/all-by-id/{userId}")
+    public ResponseWrapper<Page<BorrowResponse>> getAllById(@PathVariable Integer userId,
+                                                      @RequestParam("page") Optional<Integer> page,
+                                                      @RequestParam("size")Optional<Integer> size,
+                                                      @RequestParam("sortBy")Optional<String> sortBy,
+                                                      @RequestParam("sortOrder")Optional<String> sortOrder){
+        log.info("inside get all borrow history by user id : controller");
+        Pageable pageable = PaginationUtil.preparePaginationUtil(
+                page,
+                size.orElse(DEFAULT_PAGE_SIZE),
+                sortBy.orElse(SORT_BY),
+                sortOrder.orElse(SORT_ORDER)
+        );
+        Page<BorrowResponse> allById = borrowService.getAllById(userId, pageable);
+
+        return new ResponseWrapper<>(allById,"retrieved successfully",HttpStatus.OK.value(), true);
     }
 }

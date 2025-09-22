@@ -46,6 +46,7 @@ public class BorrowMapper {
                 .build();
 
         return BorrowDto.builder()
+                .id(borrow.getId())
                 .borrowDate(borrow.getBorrowDate())
                 .returnDate(borrow.getReturnDate())
                 .books(bookResp)
@@ -72,6 +73,8 @@ public class BorrowMapper {
                 .dueDate(borrow.getDueDate())
                 .isReturned(borrow.getIsReturned())
                 .fineAmount(borrow.getFineAmount())
+                .createdAt(borrow.getCreatedAt())
+                .updatedAt(borrow.getUpdatedAt())
                 .build();
 
     }
