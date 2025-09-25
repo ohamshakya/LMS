@@ -32,7 +32,7 @@ public class BookServiceImpl implements BookService {
         if(existedIsbn != null){
             throw new AlreadyExistsException(Messages.ISBN_NUMBER_ALREADY_EXISTS);
         }
-        Book book = BookMapper.toEntity(bookDto);
+        Book book = BookMapper.toEntity(null,bookDto);
         bookRepo.save(book);
         return BookMapper.toDto(book);
     }
@@ -48,14 +48,8 @@ public class BookServiceImpl implements BookService {
     public BookDto update(Integer id, BookDto bookDto) {
         log.info("inside update book : service");
         Book existingBook = bookRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException(Messages.BOOK_NOT_FOUND));
-        existingBook.setTitle(bookDto.getTitle());
-        existingBook.setAuthor(bookDto.getAuthor());
-        existingBook.setPublisher(bookDto.getPublisher());
-        existingBook.setIsbn(bookDto.getIsbn());
-        existingBook.setGenre(bookDto.getGenre());
-        existingBook.setTotalCopies(bookDto.getTotalCopies());
-        existingBook.setAvailableCopies(bookDto.getAvailableCopies());
-        bookRepo.save(existingBook);
+        Book entity = BookMapper.toEntity(existingBook, bookDto);
+        bookRepo.save(entity);
         return BookMapper.toDto(existingBook);
     }
 

@@ -83,4 +83,13 @@ public class GlobalExceptionHandler {
         return ErrorResponse.buildErrorResponse(message, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler({FileValidationException.class})
+    public ResponseEntity<ResponseWrapper<String>> handleFileValidationException(FileValidationException e){
+        return ErrorResponse.buildErrorResponse(e.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler({FileStorageException.class})
+    public ResponseEntity<ResponseWrapper<String>> handleFileValidationException(FileStorageException e){
+        return ErrorResponse.buildErrorResponse(e.getMessage(),HttpStatus.BAD_REQUEST);
+    }
+
 }

@@ -49,6 +49,9 @@ public class Book {
     @OneToMany(mappedBy = "book",fetch = FetchType.LAZY, cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Reservation> reservations;
 
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Document> documents = new ArrayList<>();
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

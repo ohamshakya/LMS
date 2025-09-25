@@ -39,8 +39,6 @@ public class RatingServiceImpl implements RatingService {
         log.info("authenticated with id {}",getUserId());
         Users users = usersRepo.findById(getUserId()).orElseThrow(() -> new ResourceNotFoundException("NOT FOUND"));
         Book book = bookRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("NOT FOUND"));
-
-
         Rating rating = RatingMapper.toEntity(users,book,ratingDto);
         ratingRepo.save(rating);
 

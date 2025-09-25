@@ -94,7 +94,6 @@ public class BorrowServiceImpl implements BorrowService {
         log.info("inside return book : service");
         try {
             Borrow exists = checkIfExists(id);
-
             if (exists.getIsReturned()) {
                 log.error("Sorry, cannot return the book for ID: {}", id);
                 throw new BorrowException("Sorry, book with ID " + id + " is already returned.");

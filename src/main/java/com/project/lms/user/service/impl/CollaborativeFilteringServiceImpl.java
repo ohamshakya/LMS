@@ -11,80 +11,131 @@ import java.util.stream.Collectors;
 @Service
 public class CollaborativeFilteringServiceImpl implements CollaborativeFilteringService {
     private final RatingRepo ratingRepo;
+    private final int MIN_COMMON_BOOKS = 2; // Minimum books both users must have rated
+    private final int TOP_SIMILAR_USERS = 10; // Configurable
 
     public CollaborativeFilteringServiceImpl(RatingRepo ratingRepo) {
         this.ratingRepo = ratingRepo;
     }
-
+    /*
+    *
+    * Collaborative filtering:- find users with similar taste and recommend books that you haven't read
+    * */
     @Override
     public List<Integer> recommend(Integer userId, int topN) {
+        List<Rating> currentUserRatings = ratingRepo.findByUserId(userId.longValue());
+        if (currentUserRatings.isEmpty()) {
+            return Collections.emptyList(); // No basis for recommendations
+        }
+
+        Map<Integer, Integer> currentRatings = currentUserRatings.stream()
+                .collect(Collectors.toMap(r -> r.getBook().getId(), Rating::getRating));
+
         List<Long> allUserIds = ratingRepo.findDistinctUserIds();
         allUserIds.remove(userId.longValue());
 
-        Map<Long, Map<Integer, Integer>> userRatingsMap = new HashMap<>();
-
-        for (Long uid : allUserIds) {
-            List<Rating> ratings = ratingRepo.findByUserId(uid);
-            Map<Integer, Integer> bookRatings = ratings.stream()
-                    .collect(Collectors.toMap(
-                            r -> r.getBook().getId(),
-                            Rating::getRating,
-                            (existing, replacement) -> replacement // or Math.max(existing, replacement)
-                    ));
-            userRatingsMap.put(uid, bookRatings);
+        if (allUserIds.isEmpty()) {
+            return Collections.emptyList(); // No other users to compare with
         }
 
-        List<Rating> currentUserRatings = ratingRepo.findByUserId(userId.longValue());
-        Map<Integer, Integer> currentRatings = currentUserRatings.stream()
-                .collect(Collectors.toMap(
-                        r -> r.getBook().getId(),
-                        Rating::getRating,
-                        (existing, replacement) -> replacement // same merge strategy here
-                ));
+        // Find similar users with proper filtering
+        List<SimilarUser> similarUsers = allUserIds.stream()
+                .map(otherUserId -> {
+                    List<Rating> otherRatings = ratingRepo.findByUserId(otherUserId);
+                    Map<Integer, Integer> otherRatingsMap = otherRatings.stream()
+                            .collect(Collectors.toMap(r -> r.getBook().getId(), Rating::getRating));
 
-        Map<Long, Double> similarityScores = new HashMap<>();
-
-        for (Long otherUserId : allUserIds) {
-            Map<Integer, Integer> otherRatings = userRatingsMap.get(otherUserId);
-            double similarity = calculateSimilarity(currentRatings, otherRatings);
-            similarityScores.put(otherUserId, similarity);
-        }
-
-        List<Long> topUsers = similarityScores.entrySet().stream()
-                .sorted(Map.Entry.<Long, Double>comparingByValue().reversed())
-                .limit(3)
-                .map(Map.Entry::getKey)
+                    double similarity = calculateSimilarity(currentRatings, otherRatingsMap);
+                    return new SimilarUser(otherUserId, similarity, otherRatingsMap);
+                })
+                .filter(su -> su.similarity > 0.1) // Minimum similarity threshold
+                .filter(su -> su.ratings.size() >= MIN_COMMON_BOOKS) // Enough data
+                .sorted(Comparator.comparing(SimilarUser::getSimilarity).reversed())
+                .limit(TOP_SIMILAR_USERS)
                 .collect(Collectors.toList());
 
-        Set<Integer> recommendedBookIds = new LinkedHashSet<>();
+        if (similarUsers.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        for (Long similarUserId : topUsers) {
-            Map<Integer, Integer> ratings = userRatingsMap.get(similarUserId);
-            for (Map.Entry<Integer, Integer> entry : ratings.entrySet()) {
+        // Calculate weighted scores for books
+        Map<Integer, Double> bookScores = new HashMap<>();
+        Map<Integer, Double> similaritySums = new HashMap<>();
+
+        for (SimilarUser similarUser : similarUsers) {
+            for (Map.Entry<Integer, Integer> entry : similarUser.ratings.entrySet()) {
                 Integer bookId = entry.getKey();
                 Integer rating = entry.getValue();
-                if (rating >= 4 && !currentRatings.containsKey(bookId)) {
-                    recommendedBookIds.add(bookId);
+
+                if (!currentRatings.containsKey(bookId)) { // Only recommend unrated books
+                    double weightedScore = rating * similarUser.similarity;
+
+                    bookScores.merge(bookId, weightedScore, Double::sum);
+                    similaritySums.merge(bookId, similarUser.similarity, Double::sum);
                 }
             }
         }
 
-        return recommendedBookIds.stream().limit(topN).collect(Collectors.toList());
+        // Calculate final scores and return top N
+        return bookScores.entrySet().stream()
+                .map(entry -> {
+                    Integer bookId = entry.getKey();
+                    double totalSimilarity = similaritySums.get(bookId);
+                    double finalScore = entry.getValue() / totalSimilarity;
+                    return new BookScore(bookId, finalScore);
+                })
+                .sorted(Comparator.comparing(BookScore::getScore).reversed())
+                .map(BookScore::getBookId)
+                .limit(topN)
+                .collect(Collectors.toList());
     }
 
-    private double calculateSimilarity(Map<Integer, Integer> ratings1, Map<Integer, Integer> ratings2) {
-        Set<Integer> liked1 = ratings1.entrySet().stream()
-                .filter(e -> e.getValue() >= 4).map(Map.Entry::getKey).collect(Collectors.toSet());
-        Set<Integer> liked2 = ratings2.entrySet().stream()
-                .filter(e -> e.getValue() >= 4).map(Map.Entry::getKey).collect(Collectors.toSet());
+    private double calculateSimilarity(Map<Integer, Integer> user1, Map<Integer, Integer> user2) {
+        // Jaccard similarity for liked items (your current approach)
+        Set<Integer> liked1 = user1.entrySet().stream()
+                .filter(e -> e.getValue() >= 4)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        Set<Integer> liked2 = user2.entrySet().stream()
+                .filter(e -> e.getValue() >= 4)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
 
         Set<Integer> intersection = new HashSet<>(liked1);
         intersection.retainAll(liked2);
         Set<Integer> union = new HashSet<>(liked1);
         union.addAll(liked2);
 
-        if (union.isEmpty()) return 0.0;
-        return (double) intersection.size() / union.size();
+        return union.isEmpty() ? 0.0 : (double) intersection.size() / union.size();
+    }
+
+    // Helper classes
+    private static class SimilarUser {
+        Long userId;
+        double similarity;
+        Map<Integer, Integer> ratings;
+
+        SimilarUser(Long userId, double similarity, Map<Integer, Integer> ratings) {
+            this.userId = userId;
+            this.similarity = similarity;
+            this.ratings = ratings;
+        }
+
+        double getSimilarity() { return similarity; }
+    }
+
+    private static class BookScore {
+        Integer bookId;
+        double score;
+
+        BookScore(Integer bookId, double score) {
+            this.bookId = bookId;
+            this.score = score;
+        }
+
+        double getScore() { return score; }
+        Integer getBookId() { return bookId; }
     }
 
 }

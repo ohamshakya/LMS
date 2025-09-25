@@ -42,7 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").hasRole("USER")
                         .requestMatchers(
-                                "/users/register",
+                                "/users/add-user",
                                 "/users/login",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
