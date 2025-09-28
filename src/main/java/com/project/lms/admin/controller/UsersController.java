@@ -41,7 +41,7 @@ public class UsersController {
         return "Welcome to Home page" + request.getSession().getId();
     }
 
-    @PostMapping("/add-user")
+    @PostMapping("/register")
     public ResponseWrapper<String> create(@Valid @RequestBody UsersDto usersDto) {
         log.info("inside create users : controller");
         String savedResponse = usersService.create(usersDto);
@@ -55,7 +55,7 @@ public class UsersController {
         return new ResponseWrapper<>(verify, Messages.USER_LOGGED_IN_SUCCESSFULLY, HttpStatus.OK.value(), true);
     }
 
-    @PreAuthorize("hasRole('ADMIN',true)")
+//    @PreAuthorize("hasRole('ADMIN',true)")
     @GetMapping
     public ResponseWrapper<Object> getAllUser(@RequestParam("page") Optional<Integer> page,
                                               @RequestParam("size") Optional<Integer> size,

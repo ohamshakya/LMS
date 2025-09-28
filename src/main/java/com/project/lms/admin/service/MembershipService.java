@@ -11,6 +11,8 @@ public interface MembershipService {
 
     MembershipDto getById(Integer id);
 
+    MembershipDto getByUserId(Integer userId);
+
     Page<MembershipDto> getAll(Pageable pageable);
 
     Integer getTotalMember();

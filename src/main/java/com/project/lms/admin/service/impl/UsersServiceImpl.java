@@ -94,6 +94,7 @@ public class UsersServiceImpl implements UsersService {
         UserPrincipal userDetails = (UserPrincipal) authentication.getPrincipal();
       if(authentication.isAuthenticated())
           return LoginResponse.builder()
+                  .id(userDetails.getUserId())
                   .username(loginRequest.getUsername())
                   .token(jwtService.generateToken(loginRequest.getUsername()))
                   .roles(userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet()))

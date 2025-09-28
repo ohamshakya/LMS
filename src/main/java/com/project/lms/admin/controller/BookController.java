@@ -38,7 +38,7 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseWrapper<BookDto> create(@Valid  @RequestBody BookDto bookDto) {
         log.info("inside create book : controller");
@@ -112,7 +112,7 @@ public class BookController {
     }
 
     @GetMapping("/discover")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<Page<BookDto>> getAllNewestHighRatedMostBorrowed(@RequestParam("page")Optional<Integer> page,
                                                                             @RequestParam("size")Optional<Integer> size,
                                                                             @RequestParam("query")Optional<String> query,

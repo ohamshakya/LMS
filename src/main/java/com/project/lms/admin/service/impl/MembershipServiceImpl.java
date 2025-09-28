@@ -54,6 +54,21 @@ public class MembershipServiceImpl implements MembershipService {
     }
 
     @Override
+    public MembershipDto getByUserId(Integer userId) {
+        log.info("inside get membership by user id : service");
+        // First check if user exists
+        usersRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException(Messages.USER_NOT_FOUND));
+
+        // Then get membership by user id
+        Membership membership = membershipRepo.findByUsersId(userId);
+        if (membership == null) {
+            throw new ResourceNotFoundException(Messages.MEMBERSHIP_NOT_FOUND);
+        }
+        return MembershipMapper.toDto(membership);
+    }
+
+
+    @Override
     public Page<MembershipDto> getAll(Pageable pageable) {
         log.info("inside get all membership with page : service");
         return membershipRepo.findAll(pageable).map(MembershipMapper::toDto);

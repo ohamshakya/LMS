@@ -41,7 +41,7 @@ public class BorrowController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<BorrowDto> getById(@PathVariable Integer id) {
         log.info("inside get by id : controller");
         BorrowDto byIdResponse = borrowService.getById(id);
@@ -57,7 +57,6 @@ public class BorrowController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<Page<BorrowResponse>> getAll(@RequestParam("page") Optional<Integer> page,
                                                         @RequestParam("size")Optional<Integer> size,
 //                                                        @RequestParam("query")Optional<String> query,
@@ -76,7 +75,6 @@ public class BorrowController {
     }
 
     @PutMapping("/return/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<String> returnBook(@PathVariable Integer id) {
         log.info("inside return book : controller");
         String response = borrowService.returnedBook(id);

@@ -32,16 +32,16 @@ public class UsersDto {
 
     private String address;
 
-    @Pattern(regexp = "^[a-zA-Z0-9]{5,15}$", message = "Username must be 5–15 alphanumeric characters")
+//    @Pattern(regexp = "^[a-zA-Z0-9]{5,15}$", message = "Username must be 5–15 alphanumeric characters")
     private String username;
 
     @Email
     private String email;
 
-    @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-            message = "Password must be strong"
-    )
+//    @Pattern(
+//            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+//            message = "Password must be strong"
+//    )
     private String password;
 
 
