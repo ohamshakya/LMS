@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -40,4 +41,8 @@ public class BorrowResponse {
     private Boolean isReturned;
 
     private BigDecimal fineAmount;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

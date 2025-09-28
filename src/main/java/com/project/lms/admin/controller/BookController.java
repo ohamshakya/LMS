@@ -1,8 +1,11 @@
 package com.project.lms.admin.controller;
 
 import com.project.lms.admin.dto.BookDto;
+import com.project.lms.admin.dto.DocumentDto;
+import com.project.lms.admin.dto.DocumentResponseRequest;
 import com.project.lms.admin.dto.TotalBooks;
 import com.project.lms.admin.service.BookService;
+import com.project.lms.common.exception.FileValidationException;
 import com.project.lms.common.util.Messages;
 import com.project.lms.common.util.PaginationUtil;
 import com.project.lms.common.util.ResponseWrapper;
@@ -14,7 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,11 +46,38 @@ public class BookController {
 
 //    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseWrapper<BookDto> create(@Valid  @RequestBody BookDto bookDto) {
+    public ResponseWrapper<BookDto> create(@Valid  @RequestPart("bookDto") BookDto bookDto,
+                                           @RequestPart(value = "documents",required = false) List<MultipartFile> documents,
+                                           @RequestParam(value = "documentTypes", required = false) List<String> documentTypes) {
         log.info("inside create book : controller");
+        List<DocumentDto> documentDtos = validateFile(documents, documentTypes);
+        bookDto.setDocuments(documentDtos);
+
         BookDto response = bookService.create(bookDto);
         return new ResponseWrapper<>(response, Messages.BOOK_CREATED_SUCCESSFULLY, HttpStatus.CREATED.value(),true);
     }
+
+
+    private List<DocumentDto> validateFile(List<MultipartFile> documents, List<String> documentTypes) {
+        if (documents == null || documents.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (documentTypes == null || documentTypes.isEmpty() || documents.size() != documentTypes.size()) {
+            throw new FileValidationException("The number of documents does not match the number of document types.");
+        }
+
+        List<DocumentDto> documentDtos = new ArrayList<>();
+        for (int i = 0; i < documents.size(); i++) {
+            DocumentDto documentDto = new DocumentDto();
+            documentDto.setDocument(documents.get(i));
+            documentDto.setDocumentType(documentTypes.get(i));
+            documentDtos.add(documentDto);
+        }
+        return documentDtos;
+    }
+
+
 
     @GetMapping("/{id}")
     public ResponseWrapper<BookDto> getById(@PathVariable Integer id) {
@@ -102,8 +135,6 @@ public class BookController {
         return new ResponseWrapper<>(tb, Messages.TOTAL_BOOK_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value(),true);
     }
 
-
-
     @GetMapping("/available-book")
     public ResponseWrapper<List<BookDto>> getAllAvailableBooks(){
         log.info("inside get all available books : controller");
@@ -118,7 +149,6 @@ public class BookController {
                                                                             @RequestParam("query")Optional<String> query,
                                                                             @RequestParam("sortBy")Optional<String> sortBy,
                                                                             @RequestParam("sortOrder")Optional<String> sortOrder){
-        // Use your custom pagination utility
         Pageable pageable = PaginationUtil.preparePaginationUtil(
                 page,
                 size.orElse(DEFAULT_PAGE_SIZE),
@@ -126,7 +156,6 @@ public class BookController {
                 sortOrder.orElse(DEFAULT_SORT_ORDER)
         );
 
-        // Determine which sorting to apply
         String sortType = sortBy.orElse(DEFAULT_SORT_BY).toLowerCase();
         Page<BookDto> books;
 
@@ -144,6 +173,12 @@ public class BookController {
         }
 
         return new ResponseWrapper<>(books, "Books retrieved successfully", HttpStatus.OK.value(),true);
+    }
+
+    public ResponseWrapper<String> deleteBook(@PathVariable Integer id){
+        log.info("inside delete book : controller");
+        String deleteBook = bookService.deleteBook(id);
+        return new ResponseWrapper<>(deleteBook,"deleted successfully ",HttpStatus.OK.value(),true);
     }
 
 }

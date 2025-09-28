@@ -33,6 +33,8 @@ public interface BookService {
 
     Page<BookDto> mostBorrowedBook(Pageable pageable);
 
+    String deleteBook(Integer id);
+
 
 
 

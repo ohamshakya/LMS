@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,6 +38,8 @@ public class BookDto {
     private Integer availableCopies;
 
     private Boolean isAvailable;
+
+    private List<DocumentDto> documents;
 
     private LocalDateTime createdAt;
 

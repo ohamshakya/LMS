@@ -36,7 +36,6 @@ public class UsersController {
     }
 
     @GetMapping("/home")
-    @PreAuthorize("hasRole('ADMIN')")
     public String getHome(HttpServletRequest request) {
         return "Welcome to Home page" + request.getSession().getId();
     }
@@ -55,7 +54,6 @@ public class UsersController {
         return new ResponseWrapper<>(verify, Messages.USER_LOGGED_IN_SUCCESSFULLY, HttpStatus.OK.value(), true);
     }
 
-//    @PreAuthorize("hasRole('ADMIN',true)")
     @GetMapping
     public ResponseWrapper<Object> getAllUser(@RequestParam("page") Optional<Integer> page,
                                               @RequestParam("size") Optional<Integer> size,

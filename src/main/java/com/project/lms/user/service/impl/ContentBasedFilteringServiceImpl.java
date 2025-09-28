@@ -7,6 +7,7 @@ import com.project.lms.admin.repository.BookRepo;
 import com.project.lms.user.entity.Rating;
 import com.project.lms.user.repository.RatingRepo;
 import com.project.lms.user.service.ContentBasedFilteringService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -22,32 +23,32 @@ public class ContentBasedFilteringServiceImpl implements ContentBasedFilteringSe
         this.ratingRepo = ratingRepo;
     }
 
+    /*
+    *
+    * Recommends books similar to what you've liked
+    * based on book content (genre, author).
+    * */
+
     @Override
     public List<BookDto> recommend(Integer userId, int topN) {
-        List<Rating> likedRatings = ratingRepo.findByUserIdAndRatingGreaterThanEqual(userId.longValue(), 4);
-        Set<Integer> likedBookIds = likedRatings.stream()
-                .map(r -> r.getBook().getId())
-                .collect(Collectors.toSet());
+        List<Rating> userRatings = ratingRepo.findByUserId(userId.longValue());
 
-        List<Book> likedBooks = likedRatings.stream()
-                .map(Rating::getBook)
-                .collect(Collectors.toList());
+        if (userRatings.isEmpty()) {
+            return getPopularBooks(topN);
+        }
+        UserProfile userProfile = buildUserProfile(userRatings);
 
         List<Book> allBooks = bookRepo.findAll();
+        List<Book> unratedBooks = allBooks.stream()
+                .filter(book -> userRatings.stream().noneMatch(r -> r.getBook().getId().equals(book.getId())))
+                .toList();
 
-        Map<Book, Double> similarityScores = new HashMap<>();
-
-        for (Book book : allBooks) {
-            if (likedBookIds.contains(book.getId())) continue;
-
-            double maxSimilarity = likedBooks.stream()
-                    .mapToDouble(likedBook -> contentSimilarity(book, likedBook))
-                    .max().orElse(0);
-
-            if (maxSimilarity > 0) {
-                similarityScores.put(book, maxSimilarity);
-            }
-        }
+        // Calculate similarity scores
+        Map<Book, Double> similarityScores = unratedBooks.stream()
+                .collect(Collectors.toMap(
+                        book -> book,
+                        book -> calculateContentSimilarity(book, userProfile)
+                ));
 
         return similarityScores.entrySet().stream()
                 .sorted(Map.Entry.<Book, Double>comparingByValue().reversed())
@@ -56,17 +57,73 @@ public class ContentBasedFilteringServiceImpl implements ContentBasedFilteringSe
                 .collect(Collectors.toList());
     }
 
-    private double contentSimilarity(Book book1, Book book2) {
-        double score = 0;
-        if (book1.getGenre() != null && book2.getGenre() != null &&
-                book1.getGenre().equalsIgnoreCase(book2.getGenre())) {
-            score += 0.7;
+    private UserProfile buildUserProfile(List<Rating> userRatings) {
+        Map<String, Double> genreWeights = new HashMap<>();
+        Map<String, Double> authorWeights = new HashMap<>();
+
+        double totalWeight = 0;
+
+        for (Rating rating : userRatings) {
+            Book book = rating.getBook();
+            double weight = rating.getRating(); // Higher ratings have more weight
+
+            if (book.getGenre() != null) {
+                genreWeights.merge(book.getGenre().toLowerCase(), weight, Double::sum);
+            }
+            if (book.getAuthor() != null) {
+                authorWeights.merge(book.getAuthor().toLowerCase(), weight, Double::sum);
+            }
+            totalWeight += weight;
         }
-        if (book1.getAuthor() != null && book2.getAuthor() != null &&
-                book1.getAuthor().equalsIgnoreCase(book2.getAuthor())) {
-            score += 0.3;
+
+        // Normalize weights
+        if (totalWeight > 0) {
+            double finalTotalWeight = totalWeight;
+            genreWeights.replaceAll((k, v) -> v / finalTotalWeight);
+            double finalTotalWeight1 = totalWeight;
+            authorWeights.replaceAll((k, v) -> v / finalTotalWeight1);
         }
-        return score;
+
+        return new UserProfile(genreWeights, authorWeights);
     }
 
+    private double calculateContentSimilarity(Book book, UserProfile profile) {
+        double similarity = 0.0;
+
+        // Genre similarity
+        if (book.getGenre() != null) {
+            Double genreWeight = profile.genreWeights.get(book.getGenre().toLowerCase());
+            if (genreWeight != null) {
+                similarity += genreWeight * 0.6; // Genre is more important
+            }
+        }
+
+        // Author similarity
+        if (book.getAuthor() != null) {
+            Double authorWeight = profile.authorWeights.get(book.getAuthor().toLowerCase());
+            if (authorWeight != null) {
+                similarity += authorWeight * 0.4; // Author is less important
+            }
+        }
+
+        return similarity;
+    }
+
+    private List<BookDto> getPopularBooks(int topN) {
+        // Implement popular books fallback
+        return bookRepo.findTopRatedBooks(PageRequest.of(0, topN))
+                .stream()
+                .map(BookMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    private static class UserProfile {
+        Map<String, Double> genreWeights;
+        Map<String, Double> authorWeights;
+
+        UserProfile(Map<String, Double> genreWeights, Map<String, Double> authorWeights) {
+            this.genreWeights = genreWeights;
+            this.authorWeights = authorWeights;
+        }
+    }
 }

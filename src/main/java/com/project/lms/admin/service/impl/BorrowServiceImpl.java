@@ -94,7 +94,6 @@ public class BorrowServiceImpl implements BorrowService {
         log.info("inside return book : service");
         try {
             Borrow exists = checkIfExists(id);
-
             if (exists.getIsReturned()) {
                 log.error("Sorry, cannot return the book for ID: {}", id);
                 throw new BorrowException("Sorry, book with ID " + id + " is already returned.");
@@ -124,6 +123,12 @@ public class BorrowServiceImpl implements BorrowService {
             log.error("Error returning book: {}", e.getMessage());
             throw new BorrowException("Failed to return book: " + e.getMessage());
         }
+    }
+
+    @Override
+    public Page<BorrowResponse> getAllById(Integer userId, Pageable pageable) {
+        log.info("inside get all by user id with pagination : service");
+        return borrowRepo.getAllById(userId,pageable).map(BorrowMapper::toResponse);
     }
 
     private Borrow checkIfExists(Integer id){

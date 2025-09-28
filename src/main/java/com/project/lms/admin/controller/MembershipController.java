@@ -32,7 +32,7 @@ public class MembershipController {
     }
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
+
     public ResponseWrapper<MembershipDto> getById(@PathVariable Integer id) {
         log.info("inside get membership by id : controller");
         MembershipDto byId = membershipService.getById(id);
@@ -48,7 +48,7 @@ public class MembershipController {
     }
 
     @GetMapping("/total-membership")
-//    @PreAuthorize("hasRole('ADMIN')")
+
     public ResponseWrapper<Integer> totalMembership() {
         log.info("inside total membership : controller");
         Integer response = membershipService.getTotalMember();
