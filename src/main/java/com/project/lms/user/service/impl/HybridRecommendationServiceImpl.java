@@ -8,117 +8,225 @@ import com.project.lms.user.repository.RatingRepo;
 import com.project.lms.user.service.CollaborativeFilteringService;
 import com.project.lms.user.service.ContentBasedFilteringService;
 import com.project.lms.user.service.HybridRecommendationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 public class HybridRecommendationServiceImpl implements HybridRecommendationService {
+    private static final Logger logger = LoggerFactory.getLogger(HybridRecommendationServiceImpl.class);
+
+    // Configurable weights
     private static final double COLLABORATIVE_WEIGHT = 0.6;
     private static final double CONTENT_BASED_WEIGHT = 0.4;
+    private static final int EXPANDED_RECOMMENDATIONS_FACTOR = 3; // Get 3x more recommendations for ranking
 
     private final ContentBasedFilteringService contentBasedService;
-    private final CollaborativeFilteringService collaborativeFilteringService;
+    private final CollaborativeFilteringService collaborativeService;
     private final BookRepo bookRepo;
     private final RatingRepo ratingRepo;
 
-    public HybridRecommendationServiceImpl(ContentBasedFilteringService contentBasedService, CollaborativeFilteringService collaborativeFilteringService, BookRepo bookRepo, RatingRepo ratingRepo) {
+    public HybridRecommendationServiceImpl(ContentBasedFilteringService contentBasedService,
+                                           CollaborativeFilteringService collaborativeService,
+                                           BookRepo bookRepo,
+                                           RatingRepo ratingRepo) {
         this.contentBasedService = contentBasedService;
-        this.collaborativeFilteringService = collaborativeFilteringService;
+        this.collaborativeService = collaborativeService;
         this.bookRepo = bookRepo;
         this.ratingRepo = ratingRepo;
     }
 
     @Override
     public List<BookDto> recommend(Integer userId, int topN) {
-        // Get recommendations from both systems
-        List<BookDto> contentBased = contentBasedService.recommend(userId, topN * 2); // Get more for ranking
-        List<Integer> collaborativeIds = collaborativeFilteringService.recommend(userId, topN * 2);
+        try {
+            logger.info("Generating hybrid recommendations for user: {}, topN: {}", userId, topN);
 
-        // Convert collaborative IDs to BookDto with scores
-        Map<Integer, BookDto> collaborativeBooks = collaborativeIds.stream()
-                .map(bookRepo::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toMap(
-                        Book::getId,
-                        BookMapper::toDto,
-                        (existing, replacement) -> existing
-                ));
+            // Get expanded recommendations from both systems
+            int expandedTopN = topN * EXPANDED_RECOMMENDATIONS_FACTOR;
 
-        // Combine and rank using weighted scores
-        Map<Integer, Double> finalScores = new HashMap<>();
+            List<BookDto> contentBasedRecs = getContentBasedRecommendations(userId, expandedTopN);
+            List<Integer> collaborativeRecs = getCollaborativeRecommendations(userId, expandedTopN);
 
-        // Add collaborative recommendations with weight
-        int collaborativeRank = 1;
-        for (Integer bookId : collaborativeIds) {
-            double score = COLLABORATIVE_WEIGHT * (1.0 / collaborativeRank);
-            finalScores.merge(bookId, score, Double::sum);
-            collaborativeRank++;
-        }
+            logger.debug("Content-based recommendations: {}", contentBasedRecs.size());
+            logger.debug("Collaborative recommendations: {}", collaborativeRecs.size());
 
-        // Add content-based recommendations with weight
-        int contentRank = 1;
-        for (BookDto bookDto : contentBased) {
-            double score = CONTENT_BASED_WEIGHT * (1.0 / contentRank);
-            finalScores.merge(bookDto.getId(), score, Double::sum);
-            contentRank++;
-        }
+            // If both systems return empty, use fallback
+            if (contentBasedRecs.isEmpty() && collaborativeRecs.isEmpty()) {
+                logger.info("Both recommendation systems returned empty, using popular books fallback");
+                return getPopularBooks(topN);
+            }
 
-        // Get final ranked list
-        List<BookDto> recommendedBooks = finalScores.entrySet().stream()
-                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
-                .limit(topN)
-                .map(entry -> {
-                    Integer bookId = entry.getKey();
-                    BookDto bookDto = collaborativeBooks.get(bookId);
-                    if (bookDto == null) {
-                        // Fallback to content-based book
-                        bookDto = contentBased.stream()
-                                .filter(b -> b.getId().equals(bookId))
-                                .findFirst()
-                                .orElse(null);
-                    }
-                    return bookDto;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+            // Create book lookup map for efficient access
+            Map<Integer, BookDto> bookLookup = createBookLookup(contentBasedRecs, collaborativeRecs);
 
-        // Final fallback
-        if (recommendedBooks.isEmpty()) {
+            // Calculate hybrid scores
+            Map<Integer, Double> hybridScores = calculateHybridScores(
+                    contentBasedRecs, collaborativeRecs, bookLookup.keySet());
+
+            // Get final ranked recommendations
+            List<BookDto> finalRecommendations = getRankedRecommendations(hybridScores, bookLookup, topN);
+
+            logger.info("Generated {} hybrid recommendations for user: {}", finalRecommendations.size(), userId);
+            return finalRecommendations;
+
+        } catch (Exception e) {
+            logger.error("Error generating hybrid recommendations for user: {}", userId, e);
             return getPopularBooks(topN);
         }
+    }
 
-        return recommendedBooks;
+    private List<BookDto> getContentBasedRecommendations(Integer userId, int topN) {
+        try {
+            return contentBasedService.recommend(userId, topN);
+        } catch (Exception e) {
+            logger.warn("Content-based recommendation failed for user: {}", userId, e);
+            return Collections.emptyList();
+        }
+    }
+
+    private List<Integer> getCollaborativeRecommendations(Integer userId, int topN) {
+        try {
+            return collaborativeService.recommend(userId, topN);
+        } catch (Exception e) {
+            logger.warn("Collaborative recommendation failed for user: {}", userId, e);
+            return Collections.emptyList();
+        }
+    }
+
+    private Map<Integer, BookDto> createBookLookup(List<BookDto> contentBasedRecs, List<Integer> collaborativeRecs) {
+        Map<Integer, BookDto> lookup = new HashMap<>();
+
+        // Add content-based recommendations to lookup
+        contentBasedRecs.forEach(book -> lookup.put(book.getId(), book));
+
+        // Fetch and add collaborative recommendations to lookup
+        if (!collaborativeRecs.isEmpty()) {
+            List<Integer> missingBookIds = collaborativeRecs.stream()
+                    .filter(bookId -> !lookup.containsKey(bookId))
+                    .collect(Collectors.toList());
+
+            if (!missingBookIds.isEmpty()) {
+                Map<Integer, BookDto> collaborativeBooks = bookRepo.findAllById(missingBookIds)
+                        .stream()
+                        .map(BookMapper::toDto)
+                        .collect(Collectors.toMap(BookDto::getId, Function.identity()));
+                lookup.putAll(collaborativeBooks);
+            }
+        }
+
+        return lookup;
+    }
+
+    private Map<Integer, Double> calculateHybridScores(List<BookDto> contentBasedRecs,
+                                                       List<Integer> collaborativeRecs,
+                                                       Set<Integer> availableBookIds) {
+        Map<Integer, Double> hybridScores = new HashMap<>();
+
+        // Calculate collaborative scores with rank-based weighting
+        calculateRankBasedScores(collaborativeRecs, hybridScores, COLLABORATIVE_WEIGHT, availableBookIds);
+
+        // Calculate content-based scores with rank-based weighting
+        List<Integer> contentBasedIds = contentBasedRecs.stream()
+                .map(BookDto::getId)
+                .collect(Collectors.toList());
+        calculateRankBasedScores(contentBasedIds, hybridScores, CONTENT_BASED_WEIGHT, availableBookIds);
+
+        return hybridScores;
+    }
+
+    private void calculateRankBasedScores(List<Integer> recommendations,
+                                          Map<Integer, Double> hybridScores,
+                                          double weight,
+                                          Set<Integer> availableBookIds) {
+        if (recommendations.isEmpty()) return;
+
+        double maxScore = weight;
+        double decayFactor = maxScore / recommendations.size();
+
+        for (int rank = 0; rank < recommendations.size(); rank++) {
+            Integer bookId = recommendations.get(rank);
+
+            // Only consider books that are available in our lookup
+            if (!availableBookIds.contains(bookId)) continue;
+
+            // Higher rank = higher score, with linear decay
+            double rankScore = maxScore - (decayFactor * rank);
+            if (rankScore < 0) rankScore = 0;
+
+            hybridScores.merge(bookId, rankScore, Double::sum);
+        }
+    }
+
+    private List<BookDto> getRankedRecommendations(Map<Integer, Double> hybridScores,
+                                                   Map<Integer, BookDto> bookLookup,
+                                                   int topN) {
+        return hybridScores.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
+                .limit(topN)
+                .map(entry -> bookLookup.get(entry.getKey()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private List<BookDto> getPopularBooks(int topN) {
         try {
-            // Try to get top-rated books from ratings
-            List<Integer> topRatedBookIds = ratingRepo.findTopRatedBookIds(PageRequest.of(0, topN));
+            logger.debug("Using popular books fallback for topN: {}", topN);
 
-            if (!topRatedBookIds.isEmpty()) {
-                return topRatedBookIds.stream()
-                        .map(bookRepo::findById)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .map(BookMapper::toDto)
-                        .collect(Collectors.toList());
+            // Try to get top-rated books
+            List<BookDto> topRated = getTopRatedBooks(topN);
+            if (!topRated.isEmpty()) {
+                return topRated;
             }
 
-            // Fallback to most available books if no ratings
-            return bookRepo.findAll(PageRequest.of(0, topN)).stream()
+            // Fallback to recently added books
+            List<BookDto> recentBooks = getRecentBooks(topN);
+            if (!recentBooks.isEmpty()) {
+                return recentBooks;
+            }
+
+            // Final fallback - any books
+            return bookRepo.findAll(PageRequest.of(0, topN))
+                    .stream()
                     .map(BookMapper::toDto)
                     .collect(Collectors.toList());
 
         } catch (Exception e) {
-            // Final fallback - any books
+            logger.error("Error in popular books fallback", e);
+            // Ultimate fallback
             return bookRepo.findAll().stream()
                     .limit(topN)
                     .map(BookMapper::toDto)
                     .collect(Collectors.toList());
+        }
+    }
+
+    private List<BookDto> getTopRatedBooks(int topN) {
+        try {
+            // Assuming you have a method to find top rated books
+            return bookRepo.findTopRatedBooks(PageRequest.of(0, topN))
+                    .stream()
+                    .map(BookMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.debug("Top rated books query failed, using alternative method");
+            return Collections.emptyList();
+        }
+    }
+
+    private List<BookDto> getRecentBooks(int topN) {
+        try {
+            return bookRepo.findByOrderByCreatedAtDesc(PageRequest.of(0, topN))
+                    .stream()
+                    .map(BookMapper::toDto)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.debug("Recent books query failed");
+            return Collections.emptyList();
         }
     }
 }

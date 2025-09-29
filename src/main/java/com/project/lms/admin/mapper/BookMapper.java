@@ -23,12 +23,11 @@ public class BookMapper {
         existingBook.setGenre(bookDto.getGenre());
         existingBook.setTotalCopies(bookDto.getTotalCopies());
         existingBook.setAuthor(bookDto.getAuthor());
+        existingBook.setAvailableCopies(bookDto.getAvailableCopies());
         existingBook.setIsAvailable(true);
-
         if (existingBook.getDocuments() != null) {
             mapToDocuments(bookDto.getDocuments(), existingBook);
         }
-
         return existingBook;
     }
 
@@ -47,7 +46,6 @@ public class BookMapper {
         dto.setDocuments(book.getDocuments() != null ? book.getDocuments().stream().map(BookMapper::toDocumentDto).toList() : null );
         dto.setCreatedAt(book.getCreatedAt());
         dto.setUpdatedAt(book.getUpdatedAt());
-
         return dto;
     }
 

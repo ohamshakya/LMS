@@ -18,16 +18,15 @@ public class ContentBasedFilteringServiceImpl implements ContentBasedFilteringSe
     private final BookRepo bookRepo;
     private final RatingRepo ratingRepo;
 
+    // Configurable weights for similarity calculation
+    private static final double GENRE_WEIGHT = 0.6;
+    private static final double AUTHOR_WEIGHT = 0.4;
+    private static final double MIN_SIMILARITY_THRESHOLD = 0.1;
+
     public ContentBasedFilteringServiceImpl(BookRepo bookRepo, RatingRepo ratingRepo) {
         this.bookRepo = bookRepo;
         this.ratingRepo = ratingRepo;
     }
-
-    /*
-    *
-    * Recommends books similar to what you've liked
-    * based on book content (genre, author).
-    * */
 
     @Override
     public List<BookDto> recommend(Integer userId, int topN) {
@@ -36,24 +35,35 @@ public class ContentBasedFilteringServiceImpl implements ContentBasedFilteringSe
         if (userRatings.isEmpty()) {
             return getPopularBooks(topN);
         }
+
         UserProfile userProfile = buildUserProfile(userRatings);
 
+        // Early return if profile is empty
+        if (userProfile.isEmpty()) {
+            return getPopularBooks(topN);
+        }
+
         List<Book> allBooks = bookRepo.findAll();
-        List<Book> unratedBooks = allBooks.stream()
-                .filter(book -> userRatings.stream().noneMatch(r -> r.getBook().getId().equals(book.getId())))
-                .toList();
+        Set<Integer> ratedBookIds = userRatings.stream()
+                .map(rating -> rating.getBook().getId())
+                .collect(Collectors.toSet());
 
-        // Calculate similarity scores
-        Map<Book, Double> similarityScores = unratedBooks.stream()
-                .collect(Collectors.toMap(
-                        book -> book,
-                        book -> calculateContentSimilarity(book, userProfile)
-                ));
-
-        return similarityScores.entrySet().stream()
-                .sorted(Map.Entry.<Book, Double>comparingByValue().reversed())
+        // Calculate similarity scores with filtering
+        List<BookScore> recommendations = allBooks.stream()
+                .filter(book -> !ratedBookIds.contains(book.getId()))
+                .map(book -> new BookScore(book, calculateContentSimilarity(book, userProfile)))
+                .filter(bookScore -> bookScore.score > MIN_SIMILARITY_THRESHOLD)
+                .sorted(Comparator.comparing(BookScore::getScore).reversed())
                 .limit(topN)
-                .map(entry -> BookMapper.toDto(entry.getKey()))
+                .collect(Collectors.toList());
+
+        // Fallback to popular books if no good recommendations found
+        if (recommendations.isEmpty()) {
+            return getPopularBooks(topN);
+        }
+
+        return recommendations.stream()
+                .map(bookScore -> BookMapper.toDto(bookScore.book))
                 .collect(Collectors.toList());
     }
 
@@ -61,69 +71,109 @@ public class ContentBasedFilteringServiceImpl implements ContentBasedFilteringSe
         Map<String, Double> genreWeights = new HashMap<>();
         Map<String, Double> authorWeights = new HashMap<>();
 
-        double totalWeight = 0;
+        double totalPositiveWeight = 0;
 
+        // Only consider positive ratings (>= 3) for building profile
         for (Rating rating : userRatings) {
+            if (rating.getRating() < 3) continue; // Skip low ratings
+
             Book book = rating.getBook();
             double weight = rating.getRating(); // Higher ratings have more weight
 
-            if (book.getGenre() != null) {
-                genreWeights.merge(book.getGenre().toLowerCase(), weight, Double::sum);
+            // Handle genre (consider multiple genres if separated by comma)
+            if (book.getGenre() != null && !book.getGenre().trim().isEmpty()) {
+                String[] genres = book.getGenre().toLowerCase().split("\\s*,\\s*");
+                for (String genre : genres) {
+                    genreWeights.merge(genre.trim(), weight, Double::sum);
+                }
             }
-            if (book.getAuthor() != null) {
-                authorWeights.merge(book.getAuthor().toLowerCase(), weight, Double::sum);
+
+            // Handle author
+            if (book.getAuthor() != null && !book.getAuthor().trim().isEmpty()) {
+                authorWeights.merge(book.getAuthor().toLowerCase().trim(), weight, Double::sum);
             }
-            totalWeight += weight;
+
+            totalPositiveWeight += weight;
         }
 
-        // Normalize weights
-        if (totalWeight > 0) {
-            double finalTotalWeight = totalWeight;
-            genreWeights.replaceAll((k, v) -> v / finalTotalWeight);
-            double finalTotalWeight1 = totalWeight;
-            authorWeights.replaceAll((k, v) -> v / finalTotalWeight1);
+        // Normalize weights only if we have positive ratings
+        if (totalPositiveWeight > 0) {
+            normalizeWeights(genreWeights, totalPositiveWeight);
+            normalizeWeights(authorWeights, totalPositiveWeight);
         }
 
         return new UserProfile(genreWeights, authorWeights);
     }
 
+    private void normalizeWeights(Map<String, Double> weights, double totalWeight) {
+        weights.replaceAll((k, v) -> v / totalWeight);
+    }
+
     private double calculateContentSimilarity(Book book, UserProfile profile) {
         double similarity = 0.0;
+        int featureCount = 0;
 
-        // Genre similarity
-        if (book.getGenre() != null) {
-            Double genreWeight = profile.genreWeights.get(book.getGenre().toLowerCase());
-            if (genreWeight != null) {
-                similarity += genreWeight * 0.6; // Genre is more important
+        // Genre similarity (handle multiple genres)
+        if (book.getGenre() != null && !book.getGenre().trim().isEmpty()) {
+            String[] bookGenres = book.getGenre().toLowerCase().split("\\s*,\\s*");
+            double maxGenreSimilarity = 0.0;
+
+            for (String genre : bookGenres) {
+                String trimmedGenre = genre.trim();
+                Double genreWeight = profile.genreWeights.get(trimmedGenre);
+                if (genreWeight != null && genreWeight > maxGenreSimilarity) {
+                    maxGenreSimilarity = genreWeight;
+                }
             }
+            similarity += maxGenreSimilarity * GENRE_WEIGHT;
+            if (maxGenreSimilarity > 0) featureCount++;
         }
 
         // Author similarity
-        if (book.getAuthor() != null) {
-            Double authorWeight = profile.authorWeights.get(book.getAuthor().toLowerCase());
+        if (book.getAuthor() != null && !book.getAuthor().trim().isEmpty()) {
+            String authorKey = book.getAuthor().toLowerCase().trim();
+            Double authorWeight = profile.authorWeights.get(authorKey);
             if (authorWeight != null) {
-                similarity += authorWeight * 0.4; // Author is less important
+                similarity += authorWeight * AUTHOR_WEIGHT;
+                featureCount++;
             }
         }
 
-        return similarity;
+        // If no features match, return 0
+        return featureCount > 0 ? similarity : 0.0;
     }
 
     private List<BookDto> getPopularBooks(int topN) {
-        // Implement popular books fallback
         return bookRepo.findTopRatedBooks(PageRequest.of(0, topN))
                 .stream()
                 .map(BookMapper::toDto)
                 .collect(Collectors.toList());
     }
 
+    // Helper classes
     private static class UserProfile {
         Map<String, Double> genreWeights;
         Map<String, Double> authorWeights;
 
         UserProfile(Map<String, Double> genreWeights, Map<String, Double> authorWeights) {
-            this.genreWeights = genreWeights;
-            this.authorWeights = authorWeights;
+            this.genreWeights = genreWeights != null ? genreWeights : new HashMap<>();
+            this.authorWeights = authorWeights != null ? authorWeights : new HashMap<>();
         }
+
+        boolean isEmpty() {
+            return genreWeights.isEmpty() && authorWeights.isEmpty();
+        }
+    }
+
+    private static class BookScore {
+        Book book;
+        double score;
+
+        BookScore(Book book, double score) {
+            this.book = book;
+            this.score = score;
+        }
+
+        double getScore() { return score; }
     }
 }
