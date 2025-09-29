@@ -57,6 +57,8 @@ public interface BookRepo extends JpaRepository<Book,Integer> {
 """)
     Page<Book> findMostBorrowedBooks(Pageable pageable);
 
+    List<Book> findByOrderByCreatedAtDesc(Pageable pageable);
+
 
 
 
