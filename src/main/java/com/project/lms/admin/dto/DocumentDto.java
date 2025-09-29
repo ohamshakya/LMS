@@ -12,8 +12,9 @@ import java.time.LocalDateTime;
 @Builder
 public class DocumentDto {
     private Integer id;
+    private String url;
     private MultipartFile document;
     private String documentType;
-    private String storedFileName;
+    private String fileName;
     private LocalDateTime createdAt;
 }

@@ -92,8 +92,9 @@ public class BookMapper {
     private static DocumentDto toDocumentDto(Document document){
         return DocumentDto.builder()
                 .id(document.getId())
-                .storedFileName(document.getDoc())
+                .fileName(document.getDoc())
                 .documentType(document.getDocumentType())
+                .createdAt(document.getCreatedAt())
                 .build();
     }
 
