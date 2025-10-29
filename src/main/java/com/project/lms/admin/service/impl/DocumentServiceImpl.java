@@ -44,4 +44,29 @@ public class DocumentServiceImpl implements DocumentService {
     public String getFileUrl(String fileName) {
         return "http://localhost:8080/pics/" + fileName;
     }
+
+    @Override
+    public Map<String, Object> getDocumentById(Integer id) {
+        Document doc = documentRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found with id: " + id));
+
+        Map<String, Object> docMap = new HashMap<>();
+        docMap.put("id", doc.getId());
+        docMap.put("url", "http://localhost:8080/pics/" + doc.getDoc());
+        docMap.put("documentType", doc.getDocumentType());
+        docMap.put("fileName", doc.getDoc());
+        docMap.put("createdAt", doc.getCreatedAt());
+
+        // You can also include book information if needed
+        if (doc.getBook() != null) {
+            Map<String, Object> bookInfo = new HashMap<>();
+            bookInfo.put("id", doc.getBook().getId());
+            bookInfo.put("title", doc.getBook().getTitle());
+            // Add other book fields as needed
+            docMap.put("book", bookInfo);
+        }
+
+        return docMap;
+    }
+
 }

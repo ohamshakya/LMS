@@ -41,6 +41,7 @@ public class BorrowController {
     }
 
     @GetMapping("/{id}")
+
     public ResponseWrapper<BorrowDto> getById(@PathVariable Integer id) {
         log.info("inside get by id : controller");
         BorrowDto byIdResponse = borrowService.getById(id);

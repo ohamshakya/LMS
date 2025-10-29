@@ -40,7 +40,7 @@ public class UsersController {
         return "Welcome to Home page" + request.getSession().getId();
     }
 
-    @PostMapping("/add-user")
+    @PostMapping("/register")
     public ResponseWrapper<String> create(@Valid @RequestBody UsersDto usersDto) {
         log.info("inside create users : controller");
         String savedResponse = usersService.create(usersDto);

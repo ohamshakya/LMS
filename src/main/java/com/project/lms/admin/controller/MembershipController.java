@@ -33,18 +33,27 @@ public class MembershipController {
     }
 
     @PostMapping("/create/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseWrapper<MembershipDto> create(@PathVariable Integer id, @RequestBody MembershipDto membershipDto) {
         log.info("inside create membership : controller");
         MembershipDto membershipResponse = membershipService.create(id, membershipDto);
-        return new ResponseWrapper<>(membershipResponse, Messages.MEMBERSHIP_CREATED_SUCCESSFULLY, HttpStatus.OK.value(),false);
+        return new ResponseWrapper<>(membershipResponse, Messages.MEMBERSHIP_CREATED_SUCCESSFULLY, HttpStatus.OK.value(),true);
     }
 
     @GetMapping("/{id}")
+
     public ResponseWrapper<MembershipDto> getById(@PathVariable Integer id) {
         log.info("inside get membership by id : controller");
         MembershipDto byId = membershipService.getById(id);
-        return new ResponseWrapper<>(byId, Messages.MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),false);
+        return new ResponseWrapper<>(byId, Messages.MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
+    }
+
+    @GetMapping("/user/{userId}")
+//    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseWrapper<MembershipDto> getByUserId(@PathVariable Integer userId) {
+        log.info("inside get membership by user id : controller");
+        MembershipDto byUserId = membershipService.getByUserId(userId);
+        return new ResponseWrapper<>(byUserId, Messages.MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
     }
 
     @GetMapping
@@ -63,16 +72,17 @@ public class MembershipController {
     }
 
     @GetMapping("/total-membership")
+
     public ResponseWrapper<Integer> totalMembership() {
         log.info("inside total membership : controller");
         Integer response = membershipService.getTotalMember();
-        return new ResponseWrapper<>(response, Messages.TOTAL_MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),false);
+        return new ResponseWrapper<>(response, Messages.TOTAL_MEMBERSHIP_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
     }
 
     @DeleteMapping("/{id}")
     public ResponseWrapper<String> deleteMembership(@PathVariable Integer id){
         String delete = membershipService.delete(id);
-        return new ResponseWrapper<>(delete,"deleted successfully",HttpStatus.OK.value(),false);
+        return new ResponseWrapper<>(delete,"deleted successfully",HttpStatus.OK.value(),true);
     }
 
 }

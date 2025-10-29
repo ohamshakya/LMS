@@ -22,7 +22,7 @@ public class RatingController {
     }
 
     @PostMapping("/book/{id}")
-    @PreAuthorize("hasRole('USER')")
+//    @PreAuthorize("hasRole('USER')")
     public ResponseWrapper<RatingDto> create(@PathVariable Integer id, @RequestBody RatingDto ratingDto){
         RatingDto ratingDto1 = ratingService.create(id,ratingDto);
         return new ResponseWrapper<>(ratingDto1,"created successfully", HttpStatus.OK.value(),true);

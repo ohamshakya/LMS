@@ -7,4 +7,6 @@ public interface DocumentService {
     List<Map<String, Object>> getAllDocumentsWithUrls();
 
     String getFileUrl(String fileName);
+
+    Map<String, Object> getDocumentById(Integer id);
 }
