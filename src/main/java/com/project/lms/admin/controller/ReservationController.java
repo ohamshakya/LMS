@@ -50,4 +50,11 @@ public class ReservationController {
         reservationService.cancelReservation(reservationId);
         return new ResponseWrapper<>("cancelled", "canceled", HttpStatus.OK.value(),true);
     }
+
+    @GetMapping("/{id}")
+    public ResponseWrapper<ReservationDto> getById(@PathVariable Integer id){
+        log.info("inside get reservation by id : controller");
+        ReservationDto getByIdResponse = reservationService.getById(id);
+        return new ResponseWrapper<>(getByIdResponse,"retrieved successfully",HttpStatus.OK.value(),true);
+    }
 }

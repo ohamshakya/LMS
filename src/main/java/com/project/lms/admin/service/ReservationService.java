@@ -15,4 +15,6 @@ public interface ReservationService {
     void cancelReservation(Integer reservationId);
 
     void handleReservationOnBookReturn(Book book);
+
+    ReservationDto getById(Integer id);
 }

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Create roles table first (referenced by users_details) -->
+    <changeSet id="1" author="developer">
+        <createTable tableName="role">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <createIndex tableName="role" indexName="idx_role_name">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Create users_details table -->
+    <changeSet id="2" author="developer">
+        <createTable tableName="users_details">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="middle_name" type="VARCHAR(100)"/>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <!-- Create indexes for users_details -->
+        <createIndex tableName="users_details" indexName="idx_users_username">
+            <column name="username"/>
+        </createIndex>
+
+        <createIndex tableName="users_details" indexName="idx_users_email">
+            <column name="email"/>
+        </createIndex>
+
+        <createIndex tableName="users_details" indexName="idx_users_phone">
+            <column name="phone_number"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Create membership table for One-to-One relationship -->
+    <changeSet id="3" author="developer">
+        <createTable tableName="membership">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="membership_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="users_id" type="INT">
+                <constraints nullable="false" unique="true"
+                             foreignKeyName="fk_membership_users"
+                             references="users_details(id)"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <createIndex tableName="membership" indexName="idx_membership_users">
+            <column name="users_id"/>
+        </createIndex>
+
+        <createIndex tableName="membership" indexName="idx_membership_active">
+            <column name="is_active"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Create user_role join table for Many-to-Many relationship -->
+    <changeSet id="4" author="developer">
+        <createTable tableName="user_role">
+            <column name="users_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_user_role_users"
+                             references="users_details(id)"/>
+            </column>
+            <column name="role_id" type="INT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_user_role_role"
+                             references="role(id)"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="user_role" columnNames="users_id, role_id"
+                       constraintName="pk_user_role"/>
+
+        <createIndex tableName="user_role" indexName="idx_user_role_user">
+            <column name="users_id"/>
+        </createIndex>
+
+        <createIndex tableName="user_role" indexName="idx_user_role_role">
+            <column name="role_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

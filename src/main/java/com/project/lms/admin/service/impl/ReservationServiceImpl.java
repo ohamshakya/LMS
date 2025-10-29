@@ -12,6 +12,7 @@ import com.project.lms.admin.repository.ReservationRepo;
 import com.project.lms.admin.service.EmailService;
 import com.project.lms.admin.service.ReservationService;
 import com.project.lms.common.enums.ReservationStatus;
+import com.project.lms.common.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -95,6 +96,13 @@ public class ReservationServiceImpl implements ReservationService {
             book.setIsAvailable(true);
             bookRepo.save(book);
         }
+    }
+
+    @Override
+    public ReservationDto getById(Integer id) {
+       log.info("inside reservation get by id : service");
+        Reservation existing = reservationRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("NOT FOUND"));
+        return ReservationMapper.toDto(existing);
     }
 
     private void sendHoldNotification(Users user, Book book, LocalDate expiryDate) {
