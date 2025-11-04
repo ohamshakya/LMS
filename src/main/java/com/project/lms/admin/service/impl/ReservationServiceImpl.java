@@ -14,6 +14,8 @@ import com.project.lms.admin.service.ReservationService;
 import com.project.lms.common.enums.ReservationStatus;
 import com.project.lms.common.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -103,6 +105,11 @@ public class ReservationServiceImpl implements ReservationService {
        log.info("inside reservation get by id : service");
         Reservation existing = reservationRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("NOT FOUND"));
         return ReservationMapper.toDto(existing);
+    }
+
+    @Override
+    public Page<ReservationDto> getReservationWithPagination(Pageable pageable) {
+        return reservationRepo.findAll(pageable).map(ReservationMapper::toDto);
     }
 
     private void sendHoldNotification(Users user, Book book, LocalDate expiryDate) {

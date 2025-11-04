@@ -32,6 +32,10 @@ public class MembershipMapper {
     public static MembershipDto toDto(Membership membership){
         return MembershipDto.builder()
                 .id(membership.getId())
+                .firstName(membership.getUsers().getFirstName())
+                .middleName(membership.getUsers().getMiddleName())
+                .lastName(membership.getUsers().getLastName())
+                .username(membership.getUsers().getUsername())
                 .membershipType(membership.getMembershipType())
                 .membershipStatus(membership.getMembershipStatus())
                 .dateOfIssue(membership.getDateOfIssue())

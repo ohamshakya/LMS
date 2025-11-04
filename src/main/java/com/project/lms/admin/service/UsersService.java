@@ -1,9 +1,6 @@
 package com.project.lms.admin.service;
 
-import com.project.lms.admin.dto.LoginRequest;
-import com.project.lms.admin.dto.LoginResponse;
-import com.project.lms.admin.dto.UsersDto;
-import com.project.lms.admin.dto.UsersResponse;
+import com.project.lms.admin.dto.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +18,6 @@ public interface UsersService {
     String delete(Integer id);
 
     Page<UsersResponse> search(String keyword,Pageable pageable);
+
+    TotalNumberResponse getTotalNumbers();
 }

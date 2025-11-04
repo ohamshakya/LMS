@@ -2,13 +2,17 @@ package com.project.lms.admin.controller;
 
 import com.project.lms.admin.dto.ReservationDto;
 import com.project.lms.admin.service.ReservationService;
+import com.project.lms.common.util.PaginationUtil;
 import com.project.lms.common.util.ResponseWrapper;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/reservation")
@@ -16,6 +20,10 @@ import java.util.List;
 @Tag(name = "RESERVATION", description = "RESERVATION API FOR LMS")
 @CrossOrigin("*")
 public class ReservationController {
+
+    public static final int DEFAULT_PAGE_SIZE = 10;
+    public static final String SORT_BY = "updatedAt";
+    public static final String SORT_ORDER = "ASC";
 
     private final ReservationService reservationService;
 
@@ -31,10 +39,19 @@ public class ReservationController {
     }
 
     @GetMapping
-    public ResponseWrapper<List<ReservationDto>> getAllReservation() {
+    public ResponseWrapper<Page<ReservationDto>> getAllReservation(@RequestParam("page") Optional<Integer> page,
+                                                                   @RequestParam("size")Optional<Integer> size,
+                                                                   @RequestParam("sortBy")Optional<String> sortBy,
+                                                                   @RequestParam("sortOrder")Optional<String> sortOrder) {
         log.info("inside get all reservation : controller");
-        List<ReservationDto> allReservations = reservationService.getAllReservations();
-        return new ResponseWrapper<>(allReservations, "retrieved successfully", HttpStatus.OK.value(),true);
+        Pageable pageable = PaginationUtil.preparePaginationUtil(
+                page,
+                size.orElse(DEFAULT_PAGE_SIZE),
+                sortBy.orElse(SORT_BY),
+                sortOrder.orElse(SORT_ORDER)
+        );
+        Page<ReservationDto> reservationWithPagination = reservationService.getReservationWithPagination(pageable);
+        return new ResponseWrapper<>(reservationWithPagination,"retrieved successfully",HttpStatus.OK.value(),true);
     }
 
     @GetMapping("/member/{memberId}")

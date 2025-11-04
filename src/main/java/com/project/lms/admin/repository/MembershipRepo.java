@@ -12,4 +12,5 @@ public interface MembershipRepo extends JpaRepository<Membership,Integer> {
     Integer totalMember();
 
     Membership findByUsersId(Integer userId);
+
 }

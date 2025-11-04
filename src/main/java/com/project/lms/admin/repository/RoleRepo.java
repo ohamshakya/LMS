@@ -17,4 +17,7 @@ public interface RoleRepo extends JpaRepository<Role,Integer> {
     WHERE LOWER(r.name) LIKE LOWER(CONCAT('%', COALESCE(:keyword, ''), '%'))
 """)
     Page<Role> searchRoles(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT COUNT(r) FROM Role r")
+    Integer totalRoles();
 }

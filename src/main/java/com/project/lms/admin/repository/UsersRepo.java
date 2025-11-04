@@ -20,4 +20,7 @@ public interface UsersRepo extends JpaRepository<Users, Integer> {
                OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%')))
     """)
     Page<Users> searchByFirstOrLastName(@Param("query") String query, Pageable pageable);
+
+    @Query("SELECT COUNT(u) From Users u")
+    Integer totalUsers();
 }

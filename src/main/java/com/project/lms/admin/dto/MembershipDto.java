@@ -14,6 +14,14 @@ import java.time.LocalDateTime;
 public class MembershipDto {
     private Integer id;
 
+    private String firstName;
+
+    private String middleName;
+
+    private String lastName;
+
+    private String username;
+
     private MembershipType membershipType;
 
     private MembershipStatus membershipStatus;

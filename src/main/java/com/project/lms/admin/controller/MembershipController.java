@@ -41,7 +41,6 @@ public class MembershipController {
     }
 
     @GetMapping("/{id}")
-
     public ResponseWrapper<MembershipDto> getById(@PathVariable Integer id) {
         log.info("inside get membership by id : controller");
         MembershipDto byId = membershipService.getById(id);

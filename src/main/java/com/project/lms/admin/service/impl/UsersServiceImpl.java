@@ -1,15 +1,12 @@
 package com.project.lms.admin.service.impl;
 
-import com.project.lms.admin.dto.LoginRequest;
-import com.project.lms.admin.dto.LoginResponse;
-import com.project.lms.admin.dto.UsersDto;
-import com.project.lms.admin.dto.UsersResponse;
+import com.project.lms.admin.dto.*;
 import com.project.lms.admin.entity.Role;
 import com.project.lms.admin.entity.UserPrincipal;
 import com.project.lms.admin.entity.Users;
 import com.project.lms.admin.mapper.RoleMapper;
 import com.project.lms.admin.mapper.UsersMapper;
-import com.project.lms.admin.repository.UsersRepo;
+import com.project.lms.admin.repository.*;
 import com.project.lms.security.JWTService;
 import com.project.lms.admin.service.UsersService;
 import com.project.lms.common.exception.AlreadyExistsException;
@@ -39,10 +36,25 @@ public class UsersServiceImpl implements UsersService {
 
     private final JWTService jwtService;
 
-    public UsersServiceImpl(UsersRepo usersRepo, AuthenticationManager authenticationManager, JWTService jwtService) {
+    private final RoleRepo roleRepo;
+
+    private final MembershipRepo membershipRepo;
+
+    private final ReservationRepo reservationRepo;
+
+    private final BookRepo bookRepo;
+
+    private final BorrowRepo borrowRepo;
+
+    public UsersServiceImpl(UsersRepo usersRepo, AuthenticationManager authenticationManager, JWTService jwtService, RoleRepo roleRepo, MembershipRepo membershipRepo, ReservationRepo reservationRepo, BookRepo bookRepo, BorrowRepo borrowRepo) {
         this.usersRepo = usersRepo;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.roleRepo = roleRepo;
+        this.membershipRepo = membershipRepo;
+        this.reservationRepo = reservationRepo;
+        this.bookRepo = bookRepo;
+        this.borrowRepo = borrowRepo;
     }
 
     @Override
@@ -113,4 +125,19 @@ public class UsersServiceImpl implements UsersService {
     public Page<UsersResponse> search(String keyword, Pageable pageable) {
         return usersRepo.searchByFirstOrLastName(keyword,pageable).map(UsersMapper::toResponse);
     }
+
+    @Override
+    public TotalNumberResponse getTotalNumbers() {
+        return TotalNumberResponse.builder()
+                .totalUsers(usersRepo.totalUsers())
+                .totalReservation(reservationRepo.totalReservation())
+                .totalMemberShip(membershipRepo.totalMember())
+                .totalBooks(bookRepo.countBooks())
+                .availableBooks(bookRepo.availableBooks())
+                .totalBorrows(borrowRepo.totalBorrow())
+                .totalRoles(roleRepo.totalRoles())
+                .build();
+    }
+
+
 }

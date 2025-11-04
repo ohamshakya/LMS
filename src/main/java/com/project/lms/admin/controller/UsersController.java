@@ -2,6 +2,7 @@ package com.project.lms.admin.controller;
 
 import com.project.lms.admin.dto.LoginRequest;
 import com.project.lms.admin.dto.LoginResponse;
+import com.project.lms.admin.dto.TotalNumberResponse;
 import com.project.lms.admin.dto.UsersDto;
 import com.project.lms.admin.service.UsersService;
 import com.project.lms.common.util.Messages;
@@ -81,5 +82,14 @@ public class UsersController {
     public ResponseWrapper<String> delete(@PathVariable Integer id) {
         String delete = usersService.delete(id);
         return new ResponseWrapper<>(delete, "deleted successfully", HttpStatus.OK.value(), true);
+    }
+
+    @GetMapping("/total")
+    public ResponseWrapper<TotalNumberResponse> totalNumbers(){
+        log.info("inside total number : controller");
+        TotalNumberResponse totalNumbers = usersService.getTotalNumbers();
+
+        return new ResponseWrapper<>(totalNumbers,"retrieved successfully",HttpStatus.OK.value(),true);
+
     }
 }

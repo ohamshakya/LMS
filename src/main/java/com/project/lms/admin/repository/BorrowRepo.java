@@ -20,5 +20,6 @@ public interface BorrowRepo extends JpaRepository<Borrow, Integer> {
     @Query(value = "SELECT * FROM borrow_details where user_id = :userId", nativeQuery = true)
     Page<Borrow> getAllById(@Param("userId")Integer userId,Pageable pageable);
 
-
+    @Query("SELECT COUNT(b) FROM Borrow b")
+    Integer totalBorrow();
 }
