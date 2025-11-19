@@ -49,16 +49,9 @@ public class BorrowServiceImpl implements BorrowService {
             throw new BorrowException(Messages.BOOK_ALREADY_BORROWED);
         }
 
-        // Decrease available copies by 1
         book.setAvailableCopies(book.getAvailableCopies() - 1);
-
-        // Update isAvailable based on availableCopies
         book.setIsAvailable(book.getAvailableCopies() > 0);
-
-        // Save the updated book info
         bookRepo.save(book);
-
-        // Create borrow entity and save
         Borrow borrow = BorrowMapper.toEntity(book,user, borrowDto);
         borrowRepo.save(borrow);
 

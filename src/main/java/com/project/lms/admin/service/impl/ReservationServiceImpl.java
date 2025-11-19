@@ -43,6 +43,11 @@ public class ReservationServiceImpl implements ReservationService {
         Book book = bookRepo.findById(bookId).orElseThrow(() -> new RuntimeException("Book not found"));
         Membership member = membershipRepo.findById(memberId).orElseThrow(() -> new RuntimeException("Member not found"));
 
+        if(book.getIsAvailable()){
+            throw new IllegalStateException("Book is available — reservation not needed. You can borrow it directly.");
+        }
+
+
         Reservation reservation = Reservation.builder()
                 .book(book)
                 .membership(member)
