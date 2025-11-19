@@ -6,7 +6,7 @@ import com.project.lms.admin.dto.PaymentInitiateResponse;
 import com.project.lms.admin.service.PaymentService;
 import com.project.lms.common.util.PaginationUtil;
 import com.project.lms.common.util.ResponseWrapper;
-import com.project.lms.payment.entity.Payment;
+import com.project.lms.admin.entity.Payment;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

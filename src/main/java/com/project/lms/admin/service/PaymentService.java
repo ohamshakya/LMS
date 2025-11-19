@@ -4,7 +4,7 @@ package com.project.lms.admin.service;
 import com.project.lms.admin.dto.LookupResponse;
 import com.project.lms.admin.dto.PaymentCallbackResponse;
 import com.project.lms.admin.dto.PaymentInitiateResponse;
-import com.project.lms.payment.entity.Payment;
+import com.project.lms.admin.entity.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

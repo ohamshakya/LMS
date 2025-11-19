@@ -1,8 +1,8 @@
 package com.project.lms.admin.repository;
 
+import com.project.lms.admin.entity.Payment;
 import com.project.lms.admin.entity.Users;
 import com.project.lms.common.enums.PaymentStatus;
-import com.project.lms.payment.entity.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -13,7 +13,7 @@ import com.project.lms.admin.service.PaymentService;
 import com.project.lms.common.enums.PaymentMethod;
 import com.project.lms.common.enums.PaymentStatus;
 import com.project.lms.common.exception.ResourceNotFoundException;
-import com.project.lms.payment.entity.Payment;
+import com.project.lms.admin.entity.Payment;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -47,10 +47,10 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // Check if payment already exists for this borrow
-        Optional<com.project.lms.payment.entity.Payment> existingPayment = paymentRepository.findByBorrowId(borrowId);
+        Optional<Payment> existingPayment = paymentRepository.findByBorrowId(borrowId);
 
         if (existingPayment.isPresent()) {
-            com.project.lms.payment.entity.Payment payment = existingPayment.get();
+            com.project.lms.admin.entity.Payment payment = existingPayment.get();
 
             // If payment is already completed, throw an exception
             if (payment.getStatus() == PaymentStatus.COMPLETED) {
@@ -83,7 +83,7 @@ public class PaymentServiceImpl implements PaymentService {
                 borrow.getUser()
         );
 
-        com.project.lms.payment.entity.Payment payment = com.project.lms.payment.entity.Payment.builder()
+        Payment payment = Payment.builder()
                 .borrow(borrow)
                 .method(PaymentMethod.KHALTI)
                 .status(PaymentStatus.PENDING)
