@@ -1,37 +1,53 @@
-package com.project.lms.admin.entity;
+package com.project.lms.payment.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.lms.admin.entity.Borrow;
+
+import com.project.lms.common.enums.PaymentMethod;
+import com.project.lms.common.enums.PaymentStatus;
 import jakarta.persistence.*;
-import jdk.jfr.Enabled;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
 @Getter
 @Setter
-@Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table(name = "payment_details")
 public class Payment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String paymentDate;
-
-    private BigDecimal amount;
-
-    private String remarks;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrow_id", nullable = false)
+    @JsonIgnore
     private Borrow borrow;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentMethod method;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus status;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal amount;
+
+    @Column(name = "transaction_id", unique = true)
+    private String transactionId;
+
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
-
 }
