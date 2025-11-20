@@ -1,4 +1,4 @@
-package com.project.lms.payment.entity;
+package com.project.lms.admin.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.lms.admin.entity.Borrow;

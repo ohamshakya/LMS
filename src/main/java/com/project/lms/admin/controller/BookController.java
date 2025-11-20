@@ -117,12 +117,11 @@ public class BookController {
         Page<BookDto> bookResponse;
         if (query.isPresent() && !query.get().isBlank()) {
             bookResponse = bookService.search(query.get(), pageable);
-            return new ResponseWrapper<>(bookResponse, "Retrieved successfully", HttpStatus.OK.value(),true);
+            return new ResponseWrapper<>(bookResponse, Messages.BOOK_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
         } else {
             bookResponse = bookService.getAll(pageable);
-            return new ResponseWrapper<>(bookResponse, Messages.USER_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
+            return new ResponseWrapper<>(bookResponse, Messages.BOOK_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(),true);
         }
-
     }
 
     @GetMapping("/total-books")
