@@ -44,6 +44,8 @@ public class BookMapper {
         dto.setAvailableCopies(book.getAvailableCopies());
         dto.setIsAvailable(book.getIsAvailable());
         dto.setDocuments(book.getDocuments() != null ? book.getDocuments().stream().map(BookMapper::toDocumentDto).toList() : null );
+        double avg = book.getAverageRating();
+        dto.setRating(avg == 0.0 ? null : (int) Math.round(avg));
         dto.setCreatedAt(book.getCreatedAt());
         dto.setUpdatedAt(book.getUpdatedAt());
         return dto;

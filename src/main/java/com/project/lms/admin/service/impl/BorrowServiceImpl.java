@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @Slf4j
@@ -85,27 +86,32 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public String returnedBook(Integer id) {
         log.info("inside return book : service");
+
         try {
             Borrow exists = checkIfExists(id);
+
             if (exists.getIsReturned()) {
                 log.error("Sorry, cannot return the book for ID: {}", id);
                 throw new BorrowException("Sorry, book with ID " + id + " is already returned.");
             }
+
             LocalDate returnedDate = LocalDate.now();
             exists.setReturnDate(returnedDate);
             exists.setIsReturned(true);
 
             Book book = exists.getBook();
             book.setIsAvailable(true);
-            long overdueDays = returnedDate.toEpochDay() - exists.getDueDate().toEpochDay();
+
+            long overdueDays = ChronoUnit.DAYS.between(exists.getDueDate(), returnedDate);
 
             if (overdueDays > 0) {
-                BigDecimal finePerDay = BigDecimal.valueOf(1.0);
+                BigDecimal finePerDay = BigDecimal.valueOf(50);
                 BigDecimal fineAmount = BigDecimal.valueOf(overdueDays).multiply(finePerDay);
                 exists.setFineAmount(fineAmount);
             } else {
                 exists.setFineAmount(BigDecimal.ZERO);
             }
+
             reservationService.handleReservationOnBookReturn(book);
 
             borrowRepo.save(exists);
@@ -121,7 +127,7 @@ public class BorrowServiceImpl implements BorrowService {
     @Override
     public Page<BorrowResponse> getAllById(Integer userId, Pageable pageable) {
         log.info("inside get all by user id with pagination : service");
-        return borrowRepo.getAllById(userId,pageable).map(BorrowMapper::toResponse);
+        return borrowRepo.findByUser_IdOrderByUpdatedAtAsc(userId,pageable).map(BorrowMapper::toResponse);
     }
 
     private Borrow checkIfExists(Integer id){

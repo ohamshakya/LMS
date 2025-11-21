@@ -71,7 +71,7 @@ public class UsersController {
         Object usersResponse;
         if (query.isPresent() && !query.get().isBlank()) {
             usersResponse = usersService.search(query.get(), pageable);
-            return new ResponseWrapper<>(usersResponse, "Retrieved successfully", HttpStatus.OK.value(), true);
+            return new ResponseWrapper<>(usersResponse, Messages.USER_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(), true);
         } else {
             usersResponse = usersService.getAll(pageable);
             return new ResponseWrapper<>(usersResponse, Messages.USER_RETRIEVED_SUCCESSFULLY, HttpStatus.OK.value(), true);

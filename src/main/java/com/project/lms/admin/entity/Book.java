@@ -1,5 +1,6 @@
 package com.project.lms.admin.entity;
 
+import com.project.lms.user.entity.Rating;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -46,11 +47,24 @@ public class Book {
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Borrow> borrow = new ArrayList<>();
 
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Rating> ratings = new ArrayList<>();
+
     @OneToMany(mappedBy = "book",fetch = FetchType.LAZY, cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Reservation> reservations;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Document> documents = new ArrayList<>();
+
+    public double getAverageRating() {
+        if (ratings == null || ratings.isEmpty()) {
+            return 0.0;
+        }
+        return ratings.stream()
+                .mapToInt(Rating::getRating)
+                .average()
+                .orElse(0.0);
+    }
 
     @CreationTimestamp
     private LocalDateTime createdAt;

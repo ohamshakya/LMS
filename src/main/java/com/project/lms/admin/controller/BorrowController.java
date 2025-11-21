@@ -41,7 +41,6 @@ public class BorrowController {
     }
 
     @GetMapping("/{id}")
-
     public ResponseWrapper<BorrowDto> getById(@PathVariable Integer id) {
         log.info("inside get by id : controller");
         BorrowDto byIdResponse = borrowService.getById(id);
@@ -70,7 +69,7 @@ public class BorrowController {
         );
 
         Page<BorrowResponse> allResponse = borrowService.getAll(pageable);
-        return new ResponseWrapper<>(allResponse,"retrieved successfully",HttpStatus.OK.value(),true);
+        return new ResponseWrapper<>(allResponse,Messages.BORROW_RETRIEVED_SUCCESSFULLY,HttpStatus.OK.value(),true);
     }
 
     @PutMapping("/return/{id}")

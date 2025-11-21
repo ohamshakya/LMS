@@ -40,12 +40,21 @@ public interface BookRepo extends JpaRepository<Book,Integer> {
     @Query("SELECT b FROM Book b WHERE b.isAvailable = TRUE")
     List<Book> availableBook();
 
-    @Query("""
-    SELECT r.book FROM Rating r
-    GROUP BY r.book.id
-    ORDER BY AVG(r.rating) DESC
-""")
-   Page<Book> findTopRatedBooks(Pageable pageable);
+    @Query(
+            value = """
+        SELECT b.* 
+        FROM book_details b
+        JOIN (
+            SELECT book_id, AVG(rating) AS avg_rating
+            FROM rating
+            GROUP BY book_id
+        ) r ON r.book_id = b.id
+        ORDER BY r.avg_rating DESC
+        """,
+            countQuery = "SELECT COUNT(DISTINCT book_id) FROM rating",
+            nativeQuery = true
+    )
+    Page<Book> findTopRatedBooks(Pageable pageable);
 
     Page<Book> findAllByOrderByCreatedAtDesc(Pageable pageable);
 

@@ -88,8 +88,12 @@ public class BookController {
 
     @PutMapping("/update/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseWrapper<BookDto> update(@PathVariable Integer id, @RequestBody BookDto bookDto){
+    public ResponseWrapper<BookDto> update(@PathVariable Integer id,@RequestPart("bookDto") BookDto bookDto,
+                                           @RequestPart(value = "documents",required = false) List<MultipartFile> documents,
+                                           @RequestParam(value = "documentTypes", required = false) List<String> documentTypes){
         log.info("inside update book : controller");
+        List<DocumentDto> documentDtos = validateFile(documents, documentTypes);
+        bookDto.setDocuments(documentDtos);
         BookDto response = bookService.update(id, bookDto);
         return new ResponseWrapper<>(response,Messages.BOOK_UPDATED_SUCCESSFULLY,HttpStatus.OK.value(),true);
     }
@@ -156,20 +160,11 @@ public class BookController {
         );
 
         String sortType = sortBy.orElse(DEFAULT_SORT_BY).toLowerCase();
-        Page<BookDto> books;
-
-        switch (sortType) {
-            case "most_borrowed":
-                books = bookService.mostBorrowedBook(pageable);
-                break;
-            case "highest_rated":
-                books = bookService.highestRateBook(pageable);
-                break;
-            case "newest":
-            default:
-                books = bookService.newestBook(pageable);
-                break;
-        }
+        Page<BookDto> books = switch (sortType) {
+            case "most_borrowed" -> bookService.mostBorrowedBook(pageable);
+            case "highest_rated" -> bookService.highestRateBook(pageable);
+            default -> bookService.newestBook(pageable);
+        };
 
         return new ResponseWrapper<>(books, "Books retrieved successfully", HttpStatus.OK.value(),true);
     }

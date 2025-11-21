@@ -16,6 +16,7 @@ public class ReservationMapper {
         dto.setBookTitle(reservation.getBook().getTitle());
         dto.setMemberId(reservation.getMembership().getId());
         dto.setMemberName(reservation.getMembership().getUsers().getFirstName().concat(reservation.getMembership().getUsers().getLastName()));
+        dto.setPhoneNumber(reservation.getMembership().getUsers().getPhoneNumber());
         dto.setReservationDate(reservation.getReservationDate());
         dto.setNotificationDate(reservation.getNotificationDate());
         dto.setExpiryDate(reservation.getExpiryDate());

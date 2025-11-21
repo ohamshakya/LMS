@@ -17,8 +17,10 @@ public interface BorrowRepo extends JpaRepository<Borrow, Integer> {
 
 //    Page<Borrow> getAll(Pageable pageable);
 
-    @Query(value = "SELECT * FROM borrow_details where user_id = :userId", nativeQuery = true)
-    Page<Borrow> getAllById(@Param("userId")Integer userId,Pageable pageable);
+//    @Query("SELECT b FROM Borrow WHERE b.user.id = :userId")
+//    Page<Borrow> findByUserId(@Param("userId") Integer userId, Pageable pageable);
+
+    Page<Borrow> findByUser_IdOrderByUpdatedAtAsc(Integer userId, Pageable pageable);
 
     @Query("SELECT COUNT(b) FROM Borrow b")
     Integer totalBorrow();

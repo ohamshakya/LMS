@@ -41,6 +41,7 @@ public class UsersMapper {
 
     public static UsersResponse toResponse(Users users){
         return UsersResponse.builder()
+                .id(users.getId())
                 .firstName(users.getFirstName())
                 .middleName(users.getMiddleName())
                 .lastName(users.getLastName())

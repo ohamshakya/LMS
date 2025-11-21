@@ -17,6 +17,14 @@ public interface RatingRepo extends JpaRepository<Rating,Integer> {
     @Query("SELECT DISTINCT r.user.id FROM Rating r")
     List<Long> findDistinctUserIds();
 
-    @Query("SELECT r.book.id FROM Rating r GROUP BY r.book.id ORDER BY AVG(r.rating) DESC")
-    List<Integer> findTopRatedBookIds(Pageable pageable);
+    @Query("""
+    SELECT b FROM Book b
+    JOIN (
+        SELECT r.book.id AS bookId, AVG(r.rating) AS avgRating
+        FROM Rating r
+        GROUP BY r.book.id
+    ) agg ON agg.bookId = b.id
+    ORDER BY agg.avgRating DESC
+    """)
+    List<Integer> findTopRatedBooks(Pageable pageable);
 }

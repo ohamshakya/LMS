@@ -11,6 +11,9 @@ import java.util.Set;
 @Setter
 @Builder
 public class UsersResponse {
+
+    private Integer id;
+
     private String firstName;
 
     private String middleName;

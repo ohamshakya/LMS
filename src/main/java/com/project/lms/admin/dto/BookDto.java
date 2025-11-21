@@ -41,6 +41,8 @@ public class BookDto {
 
     private List<DocumentDto> documents;
 
+    private Integer rating;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

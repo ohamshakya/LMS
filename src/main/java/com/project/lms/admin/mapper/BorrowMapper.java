@@ -9,18 +9,24 @@ import com.project.lms.admin.entity.Borrow;
 import com.project.lms.admin.entity.Users;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class BorrowMapper {
 
     public static Borrow toEntity(Book book, Users user, BorrowDto borrowDto){
         LocalDate borrowDate = LocalDate.now();
-        int loanPeriodDays = 14;
-        LocalDate dueDate = borrowDate.plusDays(loanPeriodDays);
+        LocalDate userReturnDate = borrowDto.getReturnDate();
+
+        // Calculate loan period in days
+        long loanPeriodDays = ChronoUnit.DAYS.between(borrowDate, userReturnDate);
+
+         if (loanPeriodDays < 0) throw new IllegalArgumentException("Return date cannot be before borrow date");
+
         return Borrow.builder()
-                .borrowDate(LocalDate.now())
-                .returnDate(null)
+                .borrowDate(borrowDate)
+                .returnDate(userReturnDate)
                 .isReturned(false)
-                .dueDate(dueDate)
+                .dueDate(userReturnDate)
                 .book(book)
                 .user(user)
                 .fineAmount(null)

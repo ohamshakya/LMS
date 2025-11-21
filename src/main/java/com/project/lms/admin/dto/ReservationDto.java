@@ -21,6 +21,8 @@ public class ReservationDto {
 
     private String memberName;
 
+    private String phoneNumber;
+
     private LocalDate reservationDate;
 
     private LocalDate notificationDate;
